@@ -7,7 +7,6 @@ import 'screens/daily_assessment/delayed_word_recall_screen.dart';
 import 'screens/daily_assessment/calculation_screen.dart';
 import 'services/database_helper.dart';
 import 'dart:convert';
-import 'package:nenavi/data/question_bank.dart';
 import 'screens/daily_assessment/incidental_memory_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -48,14 +47,16 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() => _isAssessing = true);
 
     try {
-      // 1. Attention Task
+      // ── 1. Attention task ──────────────────────────────────────
+      // Shows seed phrase → fruit picking → number press
+      // Returns [score, seedPhrase, enteredNumber]
       final attentionResult = await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (ctx) => AttentionTaskScreen(
             language: _language,
-            onComplete: (score, word, number) =>
-                Navigator.pop(ctx, [score, word, number]),
+            onComplete: (score, seedPhrase, enteredNumber) =>
+                Navigator.pop(ctx, [score, seedPhrase, enteredNumber]),
           ),
         ),
       );
@@ -63,24 +64,38 @@ class _HomeScreenState extends State<HomeScreen> {
       if (attentionResult == null) return;
       final attentionList = attentionResult as List;
       final attentionScore = attentionList[0] as int;
-      final selectedWord = attentionList[1] as String;
-      final enteredNumber = attentionList[2] as String;
+      final seedPhrase = attentionList[1] as String;
+      // enteredNumber carried forward if needed for other tasks
+      // final enteredNumber = attentionList[2] as String;
 
-      // 2. Word Recall Encoding
-      final encodedWords =
-          await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (ctx) => WordRecallEncodingScreen(
-                    language: _language,
-                    onComplete: (w) => Navigator.pop(ctx, w),
-                  ),
-                ),
-              )
-              as List<String>?;
+      // ── 2. Word recall encoding ────────────────────────────────
+      final encodedWords = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (ctx) => WordRecallEncodingScreen(
+            language: _language,
+            onComplete: (w) => Navigator.pop(ctx, w),
+          ),
+        ),
+      ) as List<String>?;
       if (!mounted) return;
       if (encodedWords == null) return;
-      // 3. Orientation
+
+      // ── 3. Incidental memory: recall the seed phrase ───────────
+      final incidentalScore = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (ctx) => IncidentalMemoryScreen(
+            language: _language,
+            seedPhrase: seedPhrase,
+            onComplete: (s) => Navigator.pop(ctx, s),
+          ),
+        ),
+      ) as int?;
+      if (!mounted) return;
+      if (incidentalScore == null) return;
+
+      // ── 4. Orientation ─────────────────────────────────────────
       final orientationScore = await Navigator.push(
         context,
         MaterialPageRoute(
@@ -92,7 +107,8 @@ class _HomeScreenState extends State<HomeScreen> {
       ) as int?;
       if (!mounted) return;
       if (orientationScore == null) return;
-      // 4. Calculation
+
+      // ── 5. Calculation ─────────────────────────────────────────
       final calculationScore = await Navigator.push(
         context,
         MaterialPageRoute(
@@ -104,25 +120,8 @@ class _HomeScreenState extends State<HomeScreen> {
       ) as int?;
       if (!mounted) return;
       if (calculationScore == null) return;
-      // 5. Incidental memory (uses number and selected word)
-      final numberData = QuestionBank.numberMemory[_language] ??
-          QuestionBank.numberMemory['en']!;
-      final commandText = numberData['instruction'] as String? ?? '';
-      final incidentalScore = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (ctx) => IncidentalMemoryScreen(
-            language: _language,
-            commandText: commandText,
-            selectedWord: selectedWord,
-            enteredNumber: enteredNumber,
-            onComplete: (s) => Navigator.pop(ctx, s),
-          ),
-        ),
-      ) as int?;
-      if (!mounted) return;
-      if (incidentalScore == null) return;
-      // 6. Delayed word recall
+
+      // ── 6. Delayed word recall ─────────────────────────────────
       final delayedScore = await Navigator.push(
         context,
         MaterialPageRoute(
@@ -133,17 +132,25 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ) as int?;
-      if (!mounted) return;      if (delayedScore == null) return;
-      // Compute composite and save
-      final total = attentionScore + orientationScore + calculationScore + incidentalScore + delayedScore;
-      const int maxTotal = 13; // 2 + 3 + 2 + 1 + 5
+      if (!mounted) return;
+      if (delayedScore == null) return;
+
+      // ── Compute and save ───────────────────────────────────────
+      // Max scores: attention=2, incidental=1, orientation=4, calculation=2, delayed=5 → total=14
+      const int maxTotal = 14;
+      final total = attentionScore +
+          incidentalScore +
+          orientationScore +
+          calculationScore +
+          delayedScore;
       final composite = (total * 100) ~/ maxTotal;
       final today = DateTime.now().toIso8601String().split('T')[0];
+
       final domainScoresMap = {
         'attention': attentionScore,
+        'incidental_memory': incidentalScore,
         'orientation': orientationScore,
         'calculation': calculationScore,
-        'incidental_memory': incidentalScore,
         'delayed_recall': delayedScore,
       };
 
@@ -157,12 +164,10 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!mounted) return;
       await _loadLanguageAndLastScore();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Assessment saved! Score: $composite/100'),
-        ),
+        SnackBar(content: Text('Assessment saved! Score: $composite/100')),
       );
     } catch (e, stack) {
-      print('Error: $e\n$stack');
+      debugPrint('Error: $e\n$stack');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
