@@ -23,15 +23,11 @@ class _WordRecallEncodingScreenState extends State<WordRecallEncodingScreen> {
   @override
   void initState() {
     super.initState();
-    final data = QuestionBank.wordRecall[widget.language];
-    if (data == null) {
-      final fallback = QuestionBank.wordRecall['en']!;
-      _wordsToRemember = List<String>.from(fallback['wordsToRemember']);
-      _instruction = fallback['instruction'];
-    } else {
-      _wordsToRemember = List<String>.from(data['wordsToRemember']);
-      _instruction = data['instruction'];
-    }
+    final data =
+        QuestionBank.wordRecall[widget.language] ??
+        QuestionBank.wordRecall['en']!;
+    _wordsToRemember = List<String>.from(data['wordsToRemember']);
+    _instruction = data['instruction'] as String;
   }
 
   @override
@@ -43,25 +39,21 @@ class _WordRecallEncodingScreenState extends State<WordRecallEncodingScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(_instruction, style: const TextStyle(fontSize: 18)),
+            Text(_instruction, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 30),
-            const Text(
-              'Words to remember:',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
             ..._wordsToRemember.map(
               (word) => Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Text('• $word', style: const TextStyle(fontSize: 20)),
+                child: Text('• $word', style: const TextStyle(fontSize: 22)),
               ),
             ),
             const Spacer(),
-            ElevatedButton(
-              onPressed: () {
-                widget.onComplete(_wordsToRemember); // callback pops the screen
-              },
-              child: const Text('I have remembered them'),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => widget.onComplete(_wordsToRemember),
+                child: const Text('I have remembered them'),
+              ),
             ),
             const SizedBox(height: 20),
           ],
