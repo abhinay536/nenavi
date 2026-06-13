@@ -124,8 +124,7 @@ class _OrientationScreenState extends State<OrientationScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        isSelected ? Colors.blue.shade200 : null,
+                    backgroundColor: isSelected ? Colors.blue.shade200 : null,
                     alignment: Alignment.centerLeft,
                   ),
                   onPressed: () => setState(() => _selectedOption = option),
@@ -170,8 +169,7 @@ class _OrientationScreenState extends State<OrientationScreen> {
           child: ElevatedButton(
             onPressed: () {
               final correct =
-                  _yearController.text.trim() ==
-                  DateTime.now().year.toString();
+                  _yearController.text.trim() == DateTime.now().year.toString();
               _submitAndAdvance(correct);
             },
             child: const Text('Next'),

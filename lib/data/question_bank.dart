@@ -4,7 +4,6 @@
 class QuestionBank {
   // ============================================================
   // 1. Incidental memory seed phrase (shown at the very start)
-  //    Patient reads this phrase silently; recalled later in task 5.
   // ============================================================
   static const Map<String, Map<String, dynamic>> seedPhrase = {
     'kn': {
@@ -15,15 +14,11 @@ class QuestionBank {
       'instruction': 'ಈ ವಾಕ್ಯೊನು ಓದುಲೆ:',
       'phrase': 'ಯಾನ್ ಒರಿ ಎಡ್ಡೆ ವ್ಯಕ್ತಿ',
     },
-    'en': {
-      'instruction': 'Read this phrase:',
-      'phrase': 'I AM A GOOD PERSON',
-    },
+    'en': {'instruction': 'Read this phrase:', 'phrase': 'I AM A GOOD PERSON'},
   };
 
   // ============================================================
   // 2. Fruit-picking attention task
-  //    Pick the fruit words from the list.
   // ============================================================
   static const Map<String, Map<String, dynamic>> fruitTask = {
     'kn': {
@@ -44,7 +39,7 @@ class QuestionBank {
   };
 
   // ============================================================
-  // 3. Number press / memory (shown during attention task)
+  // 3. Number memory (shown during attention task)
   // ============================================================
   static const Map<String, Map<String, dynamic>> numberMemory = {
     'kn': {
@@ -65,7 +60,7 @@ class QuestionBank {
   };
 
   // ============================================================
-  // 4. Remember words (Encoding) and Delayed recall
+  // 4. Word recall (encoding and delayed)
   // ============================================================
   static const Map<String, Map<String, dynamic>> wordRecall = {
     'kn': {
@@ -87,7 +82,6 @@ class QuestionBank {
 
   // ============================================================
   // 5. Phrase recall (incidental memory)
-  //    Which phrase did you read at the beginning?
   // ============================================================
   static const Map<String, Map<String, dynamic>> phraseRecall = {
     'kn': {
@@ -126,10 +120,8 @@ class QuestionBank {
   };
 
   // ============================================================
-  // 6. Orientation — Month, Year, Day, State
+  // 6. Orientation questions and options
   // ============================================================
-
-  // Question labels per language
   static const Map<String, Map<String, String>> orientationQuestions = {
     'kn': {
       'month': 'ಇದು ಯಾವ ತಿಂಗಳು?',
@@ -151,46 +143,87 @@ class QuestionBank {
     },
   };
 
-  // MCQ options for month
   static const Map<String, List<String>> monthOptions = {
     'kn': [
-      'ಜನವರಿ', 'ಫೆಬ್ರವರಿ', 'ಮಾರ್ಚ್', 'ಏಪ್ರಿಲ್', 'ಮೇ', 'ಜೂನ್',
-      'ಜುಲೈ', 'ಆಗಸ್ಟ್', 'ಸೆಪ್ಟೆಂಬರ್', 'ಅಕ್ಟೋಬರ್', 'ನವೆಂಬರ್', 'ಡಿಸೆಂಬರ್',
+      'ಜನವರಿ',
+      'ಫೆಬ್ರವರಿ',
+      'ಮಾರ್ಚ್',
+      'ಏಪ್ರಿಲ್',
+      'ಮೇ',
+      'ಜೂನ್',
+      'ಜುಲೈ',
+      'ಆಗಸ್ಟ್',
+      'ಸೆಪ್ಟೆಂಬರ್',
+      'ಅಕ್ಟೋಬರ್',
+      'ನವೆಂಬರ್',
+      'ಡಿಸೆಂಬರ್',
     ],
     'tcy': [
-      'ಜನವರಿ', 'ಫೆಬ್ರವರಿ', 'ಮಾರ್ಚ್', 'ಏಪ್ರಿಲ್', 'ಮೇ', 'ಜೂನ್',
-      'ಜುಲೈ', 'ಆಗಸ್ಟ್', 'ಸೆಪ್ಟೆಂಬರ್', 'ಅಕ್ಟೋಬರ್', 'ನವೆಂಬರ್', 'ಡಿಸೆಂಬರ್',
+      'ಜನವರಿ',
+      'ಫೆಬ್ರವರಿ',
+      'ಮಾರ್ಚ್',
+      'ಏಪ್ರಿಲ್',
+      'ಮೇ',
+      'ಜೂನ್',
+      'ಜುಲೈ',
+      'ಆಗಸ್ಟ್',
+      'ಸೆಪ್ಟೆಂಬರ್',
+      'ಅಕ್ಟೋಬರ್',
+      'ನವೆಂಬರ್',
+      'ಡಿಸೆಂಬರ್',
     ],
     'en': [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December',
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ],
   };
 
-  // MCQ options for day of week
   static const Map<String, List<String>> dayOptions = {
     'kn': [
-      'ಭಾನುವಾರ', 'ಸೋಮವಾರ', 'ಮಂಗಳವಾರ', 'ಬುಧವಾರ',
-      'ಗುರುವಾರ', 'ಶುಕ್ರವಾರ', 'ಶನಿವಾರ',
+      'ಭಾನುವಾರ',
+      'ಸೋಮವಾರ',
+      'ಮಂಗಳವಾರ',
+      'ಬುಧವಾರ',
+      'ಗುರುವಾರ',
+      'ಶುಕ್ರವಾರ',
+      'ಶನಿವಾರ',
     ],
     'tcy': [
-      'ಅಯಿತಾರ', 'ಸೋಮಾರ', 'ಅಂಗಾರ', 'ಬುದಾರ',
-      'ಗುರುವಾರ', 'ಶುಕ್ರಾರ', 'ಶನಿವಾರ',
+      'ಅಯಿತಾರ',
+      'ಸೋಮಾರ',
+      'ಅಂಗಾರ',
+      'ಬುದಾರ',
+      'ಗುರುವಾರ',
+      'ಶುಕ್ರಾರ',
+      'ಶನಿವಾರ',
     ],
     'en': [
-      'Sunday', 'Monday', 'Tuesday', 'Wednesday',
-      'Thursday', 'Friday', 'Saturday',
+      'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
     ],
   };
 
-  // MCQ options for state
   static const Map<String, List<String>> stateOptions = {
     'kn': ['ಆಂಧ್ರಪ್ರದೇಶ', 'ಗೋವಾ', 'ಕರ್ನಾಟಕ', 'ಕೇರಳ', 'ತಮಿಳುನಾಡು'],
     'tcy': ['ಆಂಧ್ರಪ್ರದೇಶ', 'ಗೋವಾ', 'ಕರ್ನಾಟಕ', 'ಕೇರಳ', 'ತಮಿಳುನಾಡು'],
     'en': ['Andhra Pradesh', 'Goa', 'Karnataka', 'Kerala', 'Tamil Nadu'],
   };
 
-  // Correct answers for state (index into stateOptions)
   static const int correctStateIndex = 2; // Karnataka
 
   // ============================================================

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "205522915457",
+    "project_id": "nenavi-5230b",
+    "storage_bucket": "nenavi-5230b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:205522915457:android:c7349d529c68f854437d80",
+        "android_client_info": {
+          "package_name": "com.example.nenavi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAmUdcUXcaP04fr00JbfuodJXeLr1Ma56U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

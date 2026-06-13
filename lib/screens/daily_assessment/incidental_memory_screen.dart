@@ -3,8 +3,6 @@ import 'package:nenavi/data/question_bank.dart';
 
 class IncidentalMemoryScreen extends StatefulWidget {
   final String language;
-  // seedPhrase is the correct answer; kept for validation fallback.
-  // The MCQ options and correct answer come from QuestionBank.phraseRecall.
   final String seedPhrase;
   final Function(int score) onComplete;
 
@@ -23,7 +21,7 @@ class _IncidentalMemoryScreenState extends State<IncidentalMemoryScreen> {
   late String _instruction;
   late List<String> _options;
   late String _correctOption;
-  String? _selected;
+  String? _selectedOption;
 
   @override
   void initState() {
@@ -31,9 +29,9 @@ class _IncidentalMemoryScreenState extends State<IncidentalMemoryScreen> {
     final data =
         QuestionBank.phraseRecall[widget.language] ??
         QuestionBank.phraseRecall['en']!;
-    _instruction = data['instruction'] as String;
+    _instruction = data['instruction'];
     _options = List<String>.from(data['options']);
-    _correctOption = data['correct'] as String;
+    _correctOption = data['correct'];
   }
 
   @override
@@ -51,31 +49,30 @@ class _IncidentalMemoryScreenState extends State<IncidentalMemoryScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 30),
-            ..._options.map((option) {
-              final isSelected = _selected == option;
-              return Padding(
+            ..._options.map(
+              (opt) => Padding(
                 padding: const EdgeInsets.symmetric(vertical: 6),
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          isSelected ? Colors.blue.shade200 : null,
+                      backgroundColor: _selectedOption == opt
+                          ? Colors.blue.shade200
+                          : null,
                     ),
-                    onPressed: () => setState(() => _selected = option),
-                    child: Text(option, textAlign: TextAlign.center),
+                    onPressed: () => setState(() => _selectedOption = opt),
+                    child: Text(opt, textAlign: TextAlign.center),
                   ),
                 ),
-              );
-            }),
+              ),
+            ),
             const SizedBox(height: 30),
             ElevatedButton(
-              onPressed: _selected == null
+              onPressed: _selectedOption == null
                   ? null
-                  : () {
-                      final isCorrect = _selected == _correctOption;
-                      widget.onComplete(isCorrect ? 1 : 0);
-                    },
+                  : () => widget.onComplete(
+                      _selectedOption == _correctOption ? 1 : 0,
+                    ),
               child: const Text('Submit'),
             ),
           ],

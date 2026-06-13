@@ -19,18 +19,29 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'nenavi.db');
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: (db, version) async {
-        // Create the scores table
+        // Create the scores table with patient_uid
         await db.execute('''
           CREATE TABLE scores (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             date TEXT UNIQUE,          -- store as YYYY-MM-DD
             composite_score INTEGER,
             domain_scores TEXT,        -- we'll store a JSON string
-            difficulty TEXT
+            difficulty TEXT,
+            patient_uid TEXT
           )
         ''');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          // add patient_uid column for existing databases
+          try {
+            await db.execute('ALTER TABLE scores ADD COLUMN patient_uid TEXT');
+          } catch (e) {
+            // ignore if column already exists
+          }
+        }
       },
     );
   }
@@ -45,17 +56,31 @@ class DatabaseHelper {
     );
   }
 
-  // Get all scores sorted by date
-  Future<List<Map<String, dynamic>>> getAllScores() async {
+  // Get all scores sorted by date (filtered by patient UID if provided)
+  Future<List<Map<String, dynamic>>> getAllScores({String? patientUid}) async {
     final db = await database;
-    return await db.query('scores', orderBy: 'date ASC');
+    if (patientUid == null || patientUid.isEmpty) {
+      return [];
+    }
+    return await db.query(
+      'scores',
+      where: 'patient_uid = ?',
+      whereArgs: [patientUid],
+      orderBy: 'date ASC',
+    );
   }
 
-  // Get the latest score
-  Future<Map<String, dynamic>?> getLatestScore() async {
+  // Get the latest score (filtered by patient UID if provided)
+  Future<Map<String, dynamic>?> getLatestScore({String? patientUid}) async {
     final db = await database;
+    final uid = patientUid;
+    if (uid == null || uid.isEmpty) {
+      return null;
+    }
     final List<Map<String, dynamic>> results = await db.query(
       'scores',
+      where: 'patient_uid = ?',
+      whereArgs: [uid],
       orderBy: 'date DESC',
       limit: 1,
     );

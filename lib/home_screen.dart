@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'screens/daily_assessment/attention_task_screen.dart';
 import 'screens/daily_assessment/word_recall_encoding_screen.dart';
 import 'screens/daily_assessment/orientation_screen.dart';
 import 'screens/daily_assessment/delayed_word_recall_screen.dart';
 import 'screens/daily_assessment/calculation_screen.dart';
+import 'screens/daily_assessment/incidental_memory_screen.dart';
+import 'package:nenavi/screens/patient_history_screen.dart'; // <-- add this import
 import 'services/database_helper.dart';
 import 'dart:convert';
-import 'screens/daily_assessment/incidental_memory_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -32,7 +35,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final prefs = await SharedPreferences.getInstance();
     if (!mounted) return;
     setState(() => _language = prefs.getString('language') ?? 'kn');
-    final latest = await DatabaseHelper().getLatestScore();
+    final user = FirebaseAuth.instance.currentUser;
+    final latest = await DatabaseHelper().getLatestScore(patientUid: user?.uid);
     if (!mounted) return;
     if (latest != null) {
       setState(() {
@@ -48,8 +52,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     try {
       // ── 1. Attention task ──────────────────────────────────────
-      // Shows seed phrase → fruit picking → number press
-      // Returns [score, seedPhrase, enteredNumber]
       final attentionResult = await Navigator.push(
         context,
         MaterialPageRoute(
@@ -65,80 +67,88 @@ class _HomeScreenState extends State<HomeScreen> {
       final attentionList = attentionResult as List;
       final attentionScore = attentionList[0] as int;
       final seedPhrase = attentionList[1] as String;
-      // enteredNumber carried forward if needed for other tasks
-      // final enteredNumber = attentionList[2] as String;
 
       // ── 2. Word recall encoding ────────────────────────────────
-      final encodedWords = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (ctx) => WordRecallEncodingScreen(
-            language: _language,
-            onComplete: (w) => Navigator.pop(ctx, w),
-          ),
-        ),
-      ) as List<String>?;
+      final encodedWords =
+          await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (ctx) => WordRecallEncodingScreen(
+                    language: _language,
+                    onComplete: (w) => Navigator.pop(ctx, w),
+                  ),
+                ),
+              )
+              as List<String>?;
       if (!mounted) return;
       if (encodedWords == null) return;
 
-      // ── 3. Incidental memory: recall the seed phrase ───────────
-      final incidentalScore = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (ctx) => IncidentalMemoryScreen(
-            language: _language,
-            seedPhrase: seedPhrase,
-            onComplete: (s) => Navigator.pop(ctx, s),
-          ),
-        ),
-      ) as int?;
+      // ── 3. Incidental memory ───────────
+      final incidentalScore =
+          await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (ctx) => IncidentalMemoryScreen(
+                    language: _language,
+                    seedPhrase: seedPhrase,
+                    onComplete: (s) => Navigator.pop(ctx, s),
+                  ),
+                ),
+              )
+              as int?;
       if (!mounted) return;
       if (incidentalScore == null) return;
 
       // ── 4. Orientation ─────────────────────────────────────────
-      final orientationScore = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (ctx) => OrientationScreen(
-            language: _language,
-            onComplete: (s) => Navigator.pop(ctx, s),
-          ),
-        ),
-      ) as int?;
+      final orientationScore =
+          await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (ctx) => OrientationScreen(
+                    language: _language,
+                    onComplete: (s) => Navigator.pop(ctx, s),
+                  ),
+                ),
+              )
+              as int?;
       if (!mounted) return;
       if (orientationScore == null) return;
 
       // ── 5. Calculation ─────────────────────────────────────────
-      final calculationScore = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (ctx) => CalculationScreen(
-            language: _language,
-            onComplete: (s) => Navigator.pop(ctx, s),
-          ),
-        ),
-      ) as int?;
+      final calculationScore =
+          await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (ctx) => CalculationScreen(
+                    language: _language,
+                    onComplete: (s) => Navigator.pop(ctx, s),
+                  ),
+                ),
+              )
+              as int?;
       if (!mounted) return;
       if (calculationScore == null) return;
 
       // ── 6. Delayed word recall ─────────────────────────────────
-      final delayedScore = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (ctx) => DelayedWordRecallScreen(
-            language: _language,
-            originalWords: encodedWords,
-            onComplete: (s) => Navigator.pop(ctx, s),
-          ),
-        ),
-      ) as int?;
+      final delayedScore =
+          await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (ctx) => DelayedWordRecallScreen(
+                    language: _language,
+                    originalWords: encodedWords,
+                    onComplete: (s) => Navigator.pop(ctx, s),
+                  ),
+                ),
+              )
+              as int?;
       if (!mounted) return;
       if (delayedScore == null) return;
 
       // ── Compute and save ───────────────────────────────────────
-      // Max scores: attention=2, incidental=1, orientation=4, calculation=2, delayed=5 → total=14
       const int maxTotal = 14;
-      final total = attentionScore +
+      final total =
+          attentionScore +
           incidentalScore +
           orientationScore +
           calculationScore +
@@ -154,12 +164,36 @@ class _HomeScreenState extends State<HomeScreen> {
         'delayed_recall': delayedScore,
       };
 
+      // Save to local SQLite
+      final user = FirebaseAuth.instance.currentUser;
       await DatabaseHelper().insertScore({
         'date': today,
         'composite_score': composite,
         'domain_scores': jsonEncode(domainScoresMap),
         'difficulty': 'Basic',
+        'patient_uid': user?.uid,
       });
+
+      // Save to Firestore
+      try {
+        final user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          await FirebaseFirestore.instance
+              .collection('scores')
+              .doc('${user.uid}_$today')
+              .set({
+                'patientUid': user.uid,
+                'date': today,
+                'compositeScore': composite,
+                'domainScores': domainScoresMap,
+                'difficulty': 'Basic',
+                'timestamp': FieldValue.serverTimestamp(),
+              });
+          print('Score saved to Firestore');
+        }
+      } catch (e) {
+        print('Firestore save error: $e');
+      }
 
       if (!mounted) return;
       await _loadLanguageAndLastScore();
@@ -199,6 +233,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Text('Start Daily Assessment'),
+            ),
+            const SizedBox(height: 20), // <-- spacing between buttons
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const PatientHistoryScreen(),
+                  ),
+                );
+              },
+              child: const Text('View Score History'),
             ),
           ],
         ),
