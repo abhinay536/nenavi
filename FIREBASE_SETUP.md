@@ -7,26 +7,28 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper function to check if user is a patient
+    // Helper functions
     function isPatient(userId) {
       return exists(/databases/$(database)/documents/users/$(userId))
         && get(/databases/$(database)/documents/users/$(userId)).data.role == 'patient';
     }
     
-    // Helper function to check if user is a caregiver
     function isCaregiver(userId) {
       return exists(/databases/$(database)/documents/users/$(userId))
         && get(/databases/$(database)/documents/users/$(userId)).data.role == 'caregiver';
     }
     
-    // Helper function to check if caregiver has this patient linked
     function hasPatient(caregiverId, patientId) {
       return exists(/databases/$(database)/documents/users/$(caregiverId)/patients/$(patientId));
     }
     
-    // User documents - users can only read/write their own
+    // User documents
     match /users/{userId} {
+      // User can read/write their own document
       allow read, write: if request.auth.uid == userId;
+      
+      // Allow authenticated users to query users collection to find caregivers (for registration)
+      allow read: if request.auth != null;
       
       // Caregiver's patients subcollection
       match /patients/{patientId} {

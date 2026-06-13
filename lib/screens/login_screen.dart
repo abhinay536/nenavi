@@ -32,22 +32,41 @@ class _LoginScreenState extends State<LoginScreen> {
       DocumentSnapshot userDoc = await FirebaseFirestore.instance
           .collection('users')
           .doc(userCredential.user!.uid)
-          .get();
+          .get()
+          .timeout(const Duration(seconds: 10));
 
-      String role = userDoc.get('role');
+      if (!userDoc.exists) {
+        setState(
+          () => _error = 'User profile not found. Please register again.',
+        );
+        return;
+      }
+
+      final data = userDoc.data() as Map<String, dynamic>?;
+      if (data == null) {
+        setState(() => _error = 'User data is empty. Please register again.');
+        return;
+      }
+
+      String? role = data['role'] as String?;
+      if (role == null) {
+        setState(() => _error = 'User role not set. Please register again.');
+        return;
+      }
+
       if (role == 'patient') {
-        Navigator.pushReplacementNamed(context, '/patient_home');
+        if (mounted) Navigator.pushReplacementNamed(context, '/patient_home');
       } else if (role == 'caregiver') {
-        Navigator.pushReplacementNamed(context, '/caregiver_home');
+        if (mounted) Navigator.pushReplacementNamed(context, '/caregiver_home');
       } else {
-        setState(() => _error = 'Unknown role');
+        setState(() => _error = 'Unknown role: $role');
       }
     } on FirebaseAuthException catch (e) {
       setState(() => _error = e.message ?? 'Login failed');
     } catch (e) {
       setState(() => _error = 'Error: $e');
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
