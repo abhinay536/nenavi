@@ -2,77 +2,74 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:nenavi/screens/patient_history_screen.dart';
+import '../main.dart';
 
 class CaregiverPatientsScreen extends StatefulWidget {
   const CaregiverPatientsScreen({super.key});
-
   @override
-  State<CaregiverPatientsScreen> createState() =>
-      _CaregiverPatientsScreenState();
+  State<CaregiverPatientsScreen> createState() => _CaregiverPatientsScreenState();
 }
 
 class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
-  late Future<List<Map<String, String>>> _patientsFuture;
+  late Future<List<Map<String, String>>> _future;
 
   @override
-  void initState() {
-    super.initState();
-    _patientsFuture = _fetchPatients();
-  }
+  void initState() { super.initState(); _future = _fetch(); }
 
-  Future<List<Map<String, String>>> _fetchPatients() async {
+  Future<List<Map<String, String>>> _fetch() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return [];
     try {
-      final snapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .collection('patients')
-          .get()
-          .timeout(const Duration(seconds: 20));
-      return snapshot.docs.map((d) {
+      final snap = await FirebaseFirestore.instance
+          .collection('users').doc(user.uid).collection('patients')
+          .get().timeout(const Duration(seconds: 20));
+      return snap.docs.map((d) {
         final data = d.data();
         return {
-          'uid': data['patientUid'] as String? ?? '',
+          'uid':   data['patientUid'] as String? ?? '',
           'email': data['patientEmail'] as String? ?? '',
         };
       }).toList();
-    } catch (e) {
-      debugPrint('Error fetching patients: $e');
-      return [];
-    }
+    } catch (e) { return []; }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: NenaviTheme.background,
       appBar: AppBar(title: const Text('My Patients')),
       body: FutureBuilder<List<Map<String, String>>>(
-        future: _patientsFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting)
+        future: _future,
+        builder: (context, snap) {
+          if (snap.connectionState == ConnectionState.waiting)
             return const Center(child: CircularProgressIndicator());
-          if (snapshot.hasError)
-            return Center(child: Text('Error: ${snapshot.error}'));
-          final patients = snapshot.data ?? [];
+          final patients = snap.data ?? [];
           if (patients.isEmpty)
-            return const Center(child: Text('No patients found'));
+            return Center(child: Text('No patients found.',
+                style: NenaviTheme.body(color: NenaviTheme.accent)));
           return ListView.builder(
+            padding: const EdgeInsets.all(20),
             itemCount: patients.length,
             itemBuilder: (ctx, i) {
               final p = patients[i];
-              return ListTile(
-                title: Text(p['email'] ?? 'Unknown'),
-                subtitle: Text(p['uid'] ?? ''),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          PatientHistoryScreen(patientUid: p['uid']),
-                    ),
-                  );
-                },
+              return Card(
+                margin: const EdgeInsets.only(bottom: 12),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 18, vertical: 10),
+                  leading: CircleAvatar(
+                    backgroundColor: NenaviTheme.primary.withOpacity(0.15),
+                    child: const Icon(Icons.person, color: NenaviTheme.primary),
+                  ),
+                  title: Text(p['email'] ?? 'Unknown',
+                      style: NenaviTheme.body(color: NenaviTheme.accent)
+                          .copyWith(fontWeight: FontWeight.bold)),
+                  trailing: const Icon(Icons.chevron_right_rounded,
+                      color: NenaviTheme.secondary, size: 28),
+                  onTap: () => Navigator.push(context, MaterialPageRoute(
+                    builder: (_) => PatientHistoryScreen(patientUid: p['uid']),
+                  )),
+                ),
               );
             },
           );
