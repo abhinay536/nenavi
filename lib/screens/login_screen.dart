@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../main.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
-
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
@@ -13,6 +13,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _obscure = true;
   String _error = '';
 
   Future<void> _login() async {
@@ -70,40 +71,114 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  @override
+ @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Nenavi Login')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
-              keyboardType: TextInputType.emailAddress,
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(labelText: 'Password'),
-            ),
-            const SizedBox(height: 20),
-            if (_error.isNotEmpty)
-              Text(_error, style: const TextStyle(color: Colors.red)),
-            const SizedBox(height: 10),
-            _isLoading
-                ? const CircularProgressIndicator()
-                : ElevatedButton(onPressed: _login, child: const Text('Login')),
-            TextButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/register');
-              },
-              child: const Text('Don\'t have an account? Register'),
-            ),
-          ],
+      backgroundColor: NenaviTheme.background,
+      body: SafeArea(
+        child: NenaviPage(
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 24),
+
+              // ── Brand ──────────────────────────────────────────────
+              Center(
+                child: Container(
+                  width: 90, height: 90,
+                  decoration: BoxDecoration(
+                    color: NenaviTheme.accent,
+                    borderRadius: BorderRadius.circular(22),
+                  ),
+                  child: const Icon(Icons.psychology_alt,
+                      color: Colors.white, size: 54),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Center(
+                child: Text('Nenavi',
+                    style: NenaviTheme.heading()
+                        .copyWith(fontSize: 36, color: NenaviTheme.accent)),
+              ),
+              Center(
+                child: Text('Memory Care Companion',
+                    style: NenaviTheme.body(color: NenaviTheme.secondary)),
+              ),
+              const SizedBox(height: 40),
+
+              // ── Email ──────────────────────────────────────────────
+              Text('Email', style: NenaviTheme.label()),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
+                style: NenaviTheme.body(),
+                decoration: const InputDecoration(
+                  hintText: 'your@email.com',
+                  prefixIcon: Icon(Icons.mail_outline),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // ── Password ───────────────────────────────────────────
+              Text('Password', style: NenaviTheme.label()),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _passwordController,
+                obscureText: _obscure,
+                style: NenaviTheme.body(),
+                decoration: InputDecoration(
+                  hintText: '••••••',
+                  prefixIcon: const Icon(Icons.lock_outline),
+                  suffixIcon: IconButton(
+                    icon: Icon(_obscure
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined),
+                    onPressed: () => setState(() => _obscure = !_obscure),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 28),
+
+              // ── Error ──────────────────────────────────────────────
+              if (_error.isNotEmpty) NenaviError(_error),
+
+              // ── Sign in button ─────────────────────────────────────
+              _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : ElevatedButton.icon(
+                      onPressed: _login,
+                      icon: const Icon(Icons.login, size: 24),
+                      label: const Text('Sign In'),
+                    ),
+              const SizedBox(height: 16),
+
+              // ── Register link ──────────────────────────────────────
+              Center(
+                child: TextButton(
+                  onPressed: () => Navigator.pushNamed(context, '/register'),
+                  child: RichText(
+                    text: TextSpan(
+                      style: NenaviTheme.body(color: NenaviTheme.accent),
+                      children: const [
+                        TextSpan(text: 'New here? '),
+                        TextSpan(
+                          text: 'Create an account',
+                          style: TextStyle(
+                            color: NenaviTheme.primary,
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );
