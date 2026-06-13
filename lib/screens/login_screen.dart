@@ -86,13 +86,33 @@ class _LoginScreenState extends State<LoginScreen> {
               // ── Brand ──────────────────────────────────────────────
               Center(
                 child: Container(
-                  width: 90, height: 90,
+                  width: 140,
+                  height: 140,
                   decoration: BoxDecoration(
-                    color: NenaviTheme.accent,
-                    borderRadius: BorderRadius.circular(22),
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 15,
+                        spreadRadius: 2,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                    border: Border.all(
+                      color: NenaviTheme.accent,
+                      width: 4,
+                    ),
                   ),
-                  child: const Icon(Icons.psychology_alt,
-                      color: Colors.white, size: 54),
+                  child: ClipOval(
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
