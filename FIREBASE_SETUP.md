@@ -34,7 +34,24 @@ service cloud.firestore {
       match /patients/{patientId} {
         allow read: if request.auth.uid == userId;
         allow write: if request.auth.uid == userId;
+        // Patient can link themselves to a caregiver during registration
+        allow create: if request.auth.uid == patientId
+          && isPatient(request.auth.uid)
+          && request.resource.data.patientUid == patientId;
       }
+    }
+
+    // Caregiver lookup registry (email -> uid)
+    match /caregiver_registry/{email} {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null
+        && request.resource.data.uid == request.auth.uid;
+    }
+
+    // Legacy pending links (processed when caregiver opens dashboard)
+    match /pending_patient_links/{linkId} {
+      allow create: if request.auth.uid == request.resource.data.patientUid;
+      allow read, update: if request.auth.uid == resource.data.caregiverUid;
     }
     
     // Scores collection

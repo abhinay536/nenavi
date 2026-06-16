@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nenavi/data/question_bank.dart';
+import 'package:nenavi/widgets/speakable_text.dart';
 
 class DelayedWordRecallScreen extends StatefulWidget {
   final String language;
@@ -42,8 +43,7 @@ class _DelayedWordRecallScreenState extends State<DelayedWordRecallScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final instruction =
-        _instructions[widget.language] ?? _instructions['en']!;
+    final instruction = _instructions[widget.language] ?? _instructions['en']!;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Recall Words')),
@@ -51,7 +51,12 @@ class _DelayedWordRecallScreenState extends State<DelayedWordRecallScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Text(instruction, style: const TextStyle(fontSize: 18)),
+            SpeakableText(
+              text: instruction,
+              language: widget.language,
+              style: const TextStyle(fontSize: 18),
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 8),
             Text(
               '${_selectedWords.length}/5 selected',
@@ -72,6 +77,10 @@ class _DelayedWordRecallScreenState extends State<DelayedWordRecallScreen> {
                     color: isSelected ? Colors.green.shade100 : null,
                     child: ListTile(
                       title: Text(word),
+                      trailing: SpeakerButton(
+                        text: word,
+                        language: widget.language,
+                      ),
                       onTap: () {
                         setState(() {
                           if (isSelected) {
@@ -106,5 +115,11 @@ class _DelayedWordRecallScreenState extends State<DelayedWordRecallScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    TtsService.stop();
+    super.dispose();
   }
 }

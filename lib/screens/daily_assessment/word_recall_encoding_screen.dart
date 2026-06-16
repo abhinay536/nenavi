@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nenavi/data/question_bank.dart';
+import 'package:nenavi/widgets/speakable_text.dart';
 
 class WordRecallEncodingScreen extends StatefulWidget {
   final String language;
@@ -39,12 +40,20 @@ class _WordRecallEncodingScreenState extends State<WordRecallEncodingScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(_instruction, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            SpeakableText(
+              text: _instruction,
+              language: widget.language,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 30),
             ..._wordsToRemember.map(
               (word) => Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Text('• $word', style: const TextStyle(fontSize: 22)),
+                child: SpeakableText(
+                  text: word,
+                  language: widget.language,
+                  style: const TextStyle(fontSize: 22),
+                ),
               ),
             ),
             const Spacer(),
@@ -60,5 +69,11 @@ class _WordRecallEncodingScreenState extends State<WordRecallEncodingScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    TtsService.stop();
+    super.dispose();
   }
 }

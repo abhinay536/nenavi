@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nenavi/data/question_bank.dart';
+import 'package:nenavi/widgets/speakable_text.dart';
 
 class OrientationScreen extends StatefulWidget {
   final String language;
@@ -47,6 +48,7 @@ class _OrientationScreenState extends State<OrientationScreen> {
   @override
   void dispose() {
     _yearController.dispose();
+    TtsService.stop();
     super.dispose();
   }
 
@@ -114,7 +116,11 @@ class _OrientationScreenState extends State<OrientationScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 20),
-        Text(question, style: const TextStyle(fontSize: 20)),
+        SpeakableText(
+          text: question,
+          language: widget.language,
+          style: const TextStyle(fontSize: 20),
+        ),
         const SizedBox(height: 20),
         Expanded(
           child: ListView(
@@ -122,13 +128,15 @@ class _OrientationScreenState extends State<OrientationScreen> {
               final isSelected = _selectedOption == option;
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
-                child: ElevatedButton(
+                child: SpeakableOptionButton(
+                  text: option,
+                  language: widget.language,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isSelected ? Colors.blue.shade200 : null,
                     alignment: Alignment.centerLeft,
                   ),
                   onPressed: () => setState(() => _selectedOption = option),
-                  child: Text(option),
+                  textAlign: TextAlign.left,
                 ),
               );
             }).toList(),
@@ -153,7 +161,12 @@ class _OrientationScreenState extends State<OrientationScreen> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(_questions['year']!, style: const TextStyle(fontSize: 20)),
+        SpeakableText(
+          text: _questions['year']!,
+          language: widget.language,
+          style: const TextStyle(fontSize: 20),
+          textAlign: TextAlign.center,
+        ),
         const SizedBox(height: 20),
         TextField(
           controller: _yearController,

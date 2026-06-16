@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nenavi/data/question_bank.dart';
+import 'package:nenavi/widgets/speakable_text.dart';
 
 class CalculationScreen extends StatefulWidget {
   final String language;
@@ -52,6 +53,13 @@ class _CalculationScreenState extends State<CalculationScreen> {
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    TtsService.stop();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Calculation')),
@@ -60,7 +68,12 @@ class _CalculationScreenState extends State<CalculationScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(_questionText, style: const TextStyle(fontSize: 20)),
+            SpeakableText(
+              text: _questionText,
+              language: widget.language,
+              style: const TextStyle(fontSize: 20),
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 20),
             TextField(
               controller: _controller,

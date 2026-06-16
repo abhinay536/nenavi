@@ -1,1 +1,41 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"nenavi-5230b","appId":"1:205522915457:android:c7349d529c68f854437d80","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"nenavi-5230b","configurations":{"android":"1:205522915457:android:c7349d529c68f854437d80","ios":"1:205522915457:ios:ee7e74186e8b8f31437d80"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "nenavi-5230b",
+          "appId": "1:205522915457:android:c7349d529c68f854437d80",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "nenavi-5230b",
+          "configurations": {
+            "android": "1:205522915457:android:c7349d529c68f854437d80",
+            "ios": "1:205522915457:ios:ee7e74186e8b8f31437d80"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "hosting",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "headers": [
+      {
+        "source": "**/*.apk",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/vnd.android.package-archive"
+          }
+        ]
+      }
+    ]
+  }
+}

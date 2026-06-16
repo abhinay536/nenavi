@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../main.dart';
+import '../services/patient_link_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -23,7 +24,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() { _loading = true; _error = ''; });
 
     try {
-      final email    = _emailCtrl.text.trim();
+      final email    = PatientLinkService.normalizeEmail(_emailCtrl.text);
       final password = _passCtrl.text.trim();
       if (email.isEmpty || password.isEmpty) throw Exception('Email and password are required.');
 
@@ -38,7 +39,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       };
 
       if (_role == 'patient') {
-        final cgEmail = _cgEmailCtrl.text.trim();
+        final cgEmail = PatientLinkService.normalizeEmail(_cgEmailCtrl.text);
         if (cgEmail.isEmpty) throw Exception('Please enter your caregiver\'s email.');
         userData['caregiverEmail'] = cgEmail;
 
@@ -55,11 +56,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
         final cgUid = cgSnap.data()?['uid'] as String?;
         if (cgUid == null) { await cred.user!.delete(); throw Exception('Invalid caregiver data.'); }
 
-        await FirebaseFirestore.instance.collection('pending_patient_links').doc(uid).set({
-          'patientUid': uid, 'patientEmail': email,
-          'caregiverUid': cgUid, 'caregiverEmail': cgEmail,
-          'linkedAt': FieldValue.serverTimestamp(), 'status': 'pending',
-        });
+        await PatientLinkService.linkPatientToCaregiver(
+          patientUid: uid,
+          patientEmail: email,
+          caregiverUid: cgUid,
+        );
       } else {
         await FirebaseFirestore.instance.collection('users').doc(uid).set(userData);
         await FirebaseFirestore.instance.collection('caregiver_registry').doc(email).set({

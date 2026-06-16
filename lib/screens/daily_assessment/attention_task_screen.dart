@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nenavi/data/question_bank.dart';
+import 'package:nenavi/widgets/speakable_text.dart';
 
 class AttentionTaskScreen extends StatefulWidget {
   final String language;
@@ -65,15 +66,28 @@ class _AttentionTaskScreenState extends State<AttentionTaskScreen> {
     );
   }
 
+  @override
+  void dispose() {
+    TtsService.stop();
+    super.dispose();
+  }
+
   Widget _buildSeedPhrase() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(_seedPhraseInstruction, style: const TextStyle(fontSize: 18)),
+        SpeakableText(
+          text: _seedPhraseInstruction,
+          language: widget.language,
+          style: const TextStyle(fontSize: 18),
+          textAlign: TextAlign.center,
+        ),
         const SizedBox(height: 30),
-        Text(
-          _seedPhrase,
+        SpeakableText(
+          text: _seedPhrase,
+          language: widget.language,
           style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
         ),
         const SizedBox(height: 40),
         ElevatedButton(
@@ -88,25 +102,32 @@ class _AttentionTaskScreenState extends State<AttentionTaskScreen> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(_fruitInstruction, style: const TextStyle(fontSize: 20)),
+        SpeakableText(
+          text: _fruitInstruction,
+          language: widget.language,
+          style: const TextStyle(fontSize: 20),
+          textAlign: TextAlign.center,
+        ),
         const SizedBox(height: 20),
         ..._fruitOptions.map((word) {
           final isSelected = _selectedFruits.contains(word);
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 6),
-            child: ElevatedButton(
+            child: SpeakableOptionButton(
+              text: word,
+              language: widget.language,
               style: ElevatedButton.styleFrom(
                 backgroundColor: isSelected ? Colors.green.shade300 : null,
               ),
               onPressed: () {
                 setState(() {
-                  if (isSelected)
+                  if (isSelected) {
                     _selectedFruits.remove(word);
-                  else
+                  } else {
                     _selectedFruits.add(word);
+                  }
                 });
               },
-              child: Text(word),
             ),
           );
         }),
@@ -117,7 +138,9 @@ class _AttentionTaskScreenState extends State<AttentionTaskScreen> {
                   final correct =
                       _selectedFruits.length == _correctFruits.length &&
                       _selectedFruits.every((w) => _correctFruits.contains(w));
-                  if (correct) _totalScore++;
+                  if (correct) {
+                    _totalScore++;
+                  }
                   setState(() => _step = 2);
                 }
               : null,
@@ -131,7 +154,12 @@ class _AttentionTaskScreenState extends State<AttentionTaskScreen> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(_numberInstruction, style: const TextStyle(fontSize: 20)),
+        SpeakableText(
+          text: _numberInstruction,
+          language: widget.language,
+          style: const TextStyle(fontSize: 20),
+          textAlign: TextAlign.center,
+        ),
         const SizedBox(height: 20),
         TextField(
           onChanged: (v) => _enteredNumber = v,
@@ -145,7 +173,9 @@ class _AttentionTaskScreenState extends State<AttentionTaskScreen> {
         ElevatedButton(
           onPressed: () {
             if (_enteredNumber.trim() == _targetNumber) {
-              if (_numberFirstAttempt) _totalScore++;
+              if (_numberFirstAttempt) {
+                _totalScore++;
+              }
               widget.onComplete(
                 _totalScore,
                 _seedPhrase,

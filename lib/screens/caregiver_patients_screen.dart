@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:nenavi/screens/patient_history_screen.dart';
 import '../main.dart';
+import '../services/patient_link_service.dart';
 class CaregiverPatientsScreen extends StatefulWidget {
   const CaregiverPatientsScreen({super.key});
 
@@ -24,6 +25,8 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return [];
     try {
+      await PatientLinkService.processPendingLinksForCaregiver(user.uid);
+
       final snapshot = await FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)

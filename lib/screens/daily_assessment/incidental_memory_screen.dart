@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nenavi/data/question_bank.dart';
+import 'package:nenavi/widgets/speakable_text.dart';
 
 class IncidentalMemoryScreen extends StatefulWidget {
   final String language;
@@ -43,8 +44,9 @@ class _IncidentalMemoryScreenState extends State<IncidentalMemoryScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              _instruction,
+            SpeakableText(
+              text: _instruction,
+              language: widget.language,
               style: const TextStyle(fontSize: 18),
               textAlign: TextAlign.center,
             ),
@@ -52,17 +54,15 @@ class _IncidentalMemoryScreenState extends State<IncidentalMemoryScreen> {
             ..._options.map(
               (opt) => Padding(
                 padding: const EdgeInsets.symmetric(vertical: 6),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _selectedOption == opt
-                          ? Colors.blue.shade200
-                          : null,
-                    ),
-                    onPressed: () => setState(() => _selectedOption = opt),
-                    child: Text(opt, textAlign: TextAlign.center),
+                child: SpeakableOptionButton(
+                  text: opt,
+                  language: widget.language,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _selectedOption == opt
+                        ? Colors.blue.shade200
+                        : null,
                   ),
+                  onPressed: () => setState(() => _selectedOption = opt),
                 ),
               ),
             ),
@@ -79,5 +79,11 @@ class _IncidentalMemoryScreenState extends State<IncidentalMemoryScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    TtsService.stop();
+    super.dispose();
   }
 }

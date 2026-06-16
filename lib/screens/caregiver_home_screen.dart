@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'patient_history_screen.dart';
 import '../main.dart';
+import '../services/patient_link_service.dart';
 
 class CaregiverHomeScreen extends StatefulWidget {
   const CaregiverHomeScreen({super.key});
@@ -25,6 +26,8 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
     if (caregiver == null) return [];
 
     try {
+      await PatientLinkService.processPendingLinksForCaregiver(caregiver.uid);
+
       final patientsSnapshot = await FirebaseFirestore.instance
           .collection('users')
           .doc(caregiver.uid)
@@ -154,11 +157,11 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
             itemCount: patients.length,
             itemBuilder: (ctx, i) {
               final p     = patients[i];
-              final score = p['score'] as int? ?? 0;
+              final score = p['latestScore'] as int? ?? 0;
               return _PatientCard(
                 email: p['email'] as String,
                 score: score,
-                date: p['date'] as String,
+                date: p['latestDate'] as String,
                 onTap: () => Navigator.push(context, MaterialPageRoute(
                   builder: (_) => PatientHistoryScreen(patientUid: p['uid']),
                 )).then((_) => _refresh()),
