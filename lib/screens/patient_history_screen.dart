@@ -62,8 +62,10 @@ class _PatientHistoryScreenState extends State<PatientHistoryScreen> {
     final items = scores.reversed.toList();
     final spots = <FlSpot>[
       for (var i = 0; i < items.length; i++)
-        FlSpot(i.toDouble(),
-            ((items[i]['compositeScore'] as int?) ?? 0).toDouble())
+        FlSpot(
+          i.toDouble(),
+          ((items[i]['compositeScore'] as int?) ?? 0).toDouble(),
+        ),
     ];
     return LineChartData(
       minX: 0,
@@ -74,8 +76,10 @@ class _PatientHistoryScreenState extends State<PatientHistoryScreen> {
         show: true,
         drawVerticalLine: false,
         horizontalInterval: 20,
-        getDrawingHorizontalLine: (_) =>
-            FlLine(color: NenaviTheme.secondary.withValues(alpha: 0.2), strokeWidth: 1),
+        getDrawingHorizontalLine: (_) => FlLine(
+          color: NenaviTheme.secondary.withValues(alpha: 0.2),
+          strokeWidth: 1,
+        ),
       ),
       borderData: FlBorderData(
         show: true,
@@ -94,8 +98,8 @@ class _PatientHistoryScreenState extends State<PatientHistoryScreen> {
           ),
         ),
         bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-        topTitles:    AxisTitles(sideTitles: SideTitles(showTitles: false)),
-        rightTitles:  AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
       ),
       lineBarsData: [
         LineChartBarData(
@@ -145,89 +149,111 @@ class _PatientHistoryScreenState extends State<PatientHistoryScreen> {
           final docs = snap.data ?? [];
           if (docs.isEmpty) {
             return Center(
-              child: Column(mainAxisSize: MainAxisSize.min, children: [
-                Icon(Icons.bar_chart, size: 72, color: NenaviTheme.secondary),
-                const SizedBox(height: 16),
-                Text('No scores recorded yet.',
-                    style: NenaviTheme.subheading(color: NenaviTheme.accent)),
-              ]),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.bar_chart, size: 72, color: NenaviTheme.secondary),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No scores recorded yet.',
+                    style: NenaviTheme.subheading(color: NenaviTheme.accent),
+                  ),
+                ],
+              ),
             );
           }
 
-          return Column(children: [
-            // ── Chart ──────────────────────────────────────────────
-            Container(
-              color: NenaviTheme.cardBg,
-              padding: const EdgeInsets.fromLTRB(8, 20, 20, 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 16, bottom: 10),
-                    child: Text('Progress Over Time',
-                        style: NenaviTheme.label(color: NenaviTheme.accent)),
-                  ),
-                  SizedBox(height: 200, child: LineChart(_buildChart(docs))),
-                  const SizedBox(height: 8),
-                ],
+          return Column(
+            children: [
+              // ── Chart ──────────────────────────────────────────────
+              Container(
+                color: NenaviTheme.cardBg,
+                padding: const EdgeInsets.fromLTRB(8, 20, 20, 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(left: 16, bottom: 10),
+                      child: Text(
+                        'Progress Over Time',
+                        style: NenaviTheme.label(color: NenaviTheme.accent),
+                      ),
+                    ),
+                    SizedBox(height: 200, child: LineChart(_buildChart(docs))),
+                    const SizedBox(height: 8),
+                  ],
+                ),
               ),
-            ),
-            const Divider(height: 1, color: Color(0xFFD5C9B0)),
+              const Divider(height: 1, color: Color(0xFFD5C9B0)),
 
-            // ── Score list ──────────────────────────────────────────
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 18, vertical: 16),
-                itemCount: docs.length,
-                itemBuilder: (ctx, i) {
-                  final d     = docs[i];
-                  final score = (d['compositeScore'] as int?) ?? 0;
-                  final date  = d['date'] as String? ?? '';
-                  final time  = d['time'] as String? ?? '';      // kept from old
-                  final diff  = d['difficulty'] ?? 'Basic';
+              // ── Score list ──────────────────────────────────────────
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 16,
+                  ),
+                  itemCount: docs.length,
+                  itemBuilder: (ctx, i) {
+                    final d = docs[i];
+                    final score = (d['compositeScore'] as int?) ?? 0;
+                    final date = d['date'] as String? ?? '';
+                    final time = d['time'] as String? ?? ''; // kept from old
+                    final diff = d['difficulty'] ?? 'Basic';
 
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 18, vertical: 16),
-                      child: Row(children: [
-                        Container(
-                          width: 58, height: 58,
-                          decoration: BoxDecoration(
-                            color: scoreColor(score),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Center(
-                            child: Text('$score',
-                                style: NenaviTheme.subheading(
-                                    color: scoreTextColor(score))
-                                    .copyWith(fontSize: 20)),
-                          ),
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 16,
                         ),
-                        const SizedBox(width: 16),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Row(
                           children: [
-                            Text(
-                              time.isNotEmpty ? '$date  ·  $time' : date,
-                              style: NenaviTheme.body(color: NenaviTheme.accent)
-                                  .copyWith(fontWeight: FontWeight.bold),
+                            Container(
+                              width: 58,
+                              height: 58,
+                              decoration: BoxDecoration(
+                                color: scoreColor(score),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  '$score',
+                                  style: NenaviTheme.subheading(
+                                    color: scoreTextColor(score),
+                                  ).copyWith(fontSize: 20),
+                                ),
+                              ),
                             ),
-                            const SizedBox(height: 4),
-                            Text('Score: $score / 100   ·   $diff',
-                                style: NenaviTheme.small(
-                                    color: NenaviTheme.secondary)),
+                            const SizedBox(width: 16),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  time.isNotEmpty ? '$date  ·  $time' : date,
+                                  style: NenaviTheme.body(
+                                    color: NenaviTheme.accent,
+                                  ).copyWith(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Score: $score / 100   ·   $diff',
+                                  style: NenaviTheme.small(
+                                    color: NenaviTheme.secondary,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
-                      ]),
-                    ),
-                  );
-                },
+                      ),
+                    );
+                  },
+                ),
               ),
-            ),
-          ]);
+            ],
+          );
         },
       ),
     );

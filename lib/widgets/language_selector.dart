@@ -15,16 +15,36 @@ class LanguageSelector extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.9),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: NenaviTheme.secondary.withValues(alpha: 0.3)),
+            border: Border.all(
+              color: NenaviTheme.secondary.withValues(alpha: 0.3),
+            ),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: lang,
               icon: const Icon(Icons.language, color: NenaviTheme.primary),
               items: const [
-                DropdownMenuItem(value: 'en', child: Text('English', style: TextStyle(fontWeight: FontWeight.w600))),
-                DropdownMenuItem(value: 'kn', child: Text('ಕನ್ನಡ', style: TextStyle(fontWeight: FontWeight.w600))),
-                DropdownMenuItem(value: 'tcy', child: Text('ತುಳು', style: TextStyle(fontWeight: FontWeight.w600))),
+                DropdownMenuItem(
+                  value: 'en',
+                  child: Text(
+                    'English',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: 'kn',
+                  child: Text(
+                    'ಕನ್ನಡ',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: 'tcy',
+                  child: Text(
+                    'ತುಳು',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
               ],
               onChanged: (String? newLang) async {
                 if (newLang != null) {

@@ -23,7 +23,8 @@ class Localization {
       'good_day': 'Good day!',
       'start_test': 'Start Today\'s Test',
       'test_in_progress': 'In progress…',
-      'test_subtitle': 'Takes about 10 minutes.\nDo it at the same time each day.',
+      'test_subtitle':
+          'Takes about 10 minutes.\nDo it at the same time each day.',
       'score_history': 'Score History',
       'history_subtitle': 'See how you have been doing over time.',
       'view_scores': 'View My Scores',
@@ -54,7 +55,8 @@ class Localization {
       'good_day': 'ಶುಭ ದಿನ!',
       'start_test': 'ಇಂದಿನ ಪರೀಕ್ಷೆಯನ್ನು ಪ್ರಾರಂಭಿಸಿ',
       'test_in_progress': 'ಪ್ರಗತಿಯಲ್ಲಿದೆ…',
-      'test_subtitle': 'ಸುಮಾರು ೧೦ ನಿಮಿಷ ತೆಗೆದುಕೊಳ್ಳುತ್ತದೆ.\nಪ್ರತಿದಿನ ಒಂದೇ ಸಮಯಕ್ಕೆ ಮಾಡಿ.',
+      'test_subtitle':
+          'ಸುಮಾರು ೧೦ ನಿಮಿಷ ತೆಗೆದುಕೊಳ್ಳುತ್ತದೆ.\nಪ್ರತಿದಿನ ಒಂದೇ ಸಮಯಕ್ಕೆ ಮಾಡಿ.',
       'score_history': 'ಸ್ಕೋರ್ ಇತಿಹಾಸ',
       'history_subtitle': 'ಕಾಲಾನಂತರದಲ್ಲಿ ನಿಮ್ಮ ಪ್ರಗತಿಯನ್ನು ನೋಡಿ.',
       'view_scores': 'ನನ್ನ ಸ್ಕೋರ್‌ಗಳನ್ನು ವೀಕ್ಷಿಸಿ',
@@ -85,14 +87,15 @@ class Localization {
       'good_day': 'ಎಡ್ಡೆ ದಿನ!',
       'start_test': 'ಇನಿಯ ಪರೀಕ್ಷೆನ್ ಸುರು ಮಲ್ಪುಲೆ',
       'test_in_progress': 'ನಡತೊಂದುಂಡು…',
-      'test_subtitle': 'ಸುಮಾರ್ ೧೦ ನಿಮಿಷ ದೆತೊನುಂಡು.\nದಿನಾಲ ಒಂಜೇ ಪೊರ್ತುಗು ಮಲ್ಪುಲೆ.',
+      'test_subtitle':
+          'ಸುಮಾರ್ ೧೦ ನಿಮಿಷ ದೆತೊನುಂಡು.\nದಿನಾಲ ಒಂಜೇ ಪೊರ್ತುಗು ಮಲ್ಪುಲೆ.',
       'score_history': 'ಸ್ಕೋರ್ ಇತಿಹಾಸ',
       'history_subtitle': 'ಕಾಲ ಕರಿನಂಚನೆ ಈರೆನ ಪ್ರಗತಿನ್ ತೂಲೆ.',
       'view_scores': 'ಯನ್ನ ಸ್ಕೋರ್‌ಲೆನ್ ತೂಲೆ',
       'last_score': 'ಕಡೆತ ಸ್ಕೋರ್',
       'language': 'ಭಾಷೆ (Language)',
       'time_remaining': 'ಒರಿದಿನ ಪೊರ್ತು',
-    }
+    },
   };
 
   static String get(String key, String language) {

@@ -17,7 +17,9 @@ class ScoreService {
 
       final scores = snapshot.docs.map(_mapScoreDoc).toList();
       scores.sort((a, b) {
-        final dateCompare = (b['date'] as String).compareTo(a['date'] as String);
+        final dateCompare = (b['date'] as String).compareTo(
+          a['date'] as String,
+        );
         if (dateCompare != 0) return dateCompare;
         final aTs = a['timestamp'];
         final bTs = b['timestamp'];

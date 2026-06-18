@@ -41,7 +41,8 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
       for (var patientDoc in patientsSnapshot.docs) {
         final patientData = patientDoc.data();
         final patientUid = patientData['patientUid'] as String?;
-        final patientEmail = patientData['patientEmail'] as String? ?? 'Unknown';
+        final patientEmail =
+            patientData['patientEmail'] as String? ?? 'Unknown';
 
         if (patientUid != null && patientUid.isNotEmpty) {
           int latestScore = 0;
@@ -75,7 +76,8 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
     }
   }
 
-  void _refresh() => setState(() => _patientDataFuture = _fetchPatientsWithLatestScores());
+  void _refresh() =>
+      setState(() => _patientDataFuture = _fetchPatientsWithLatestScores());
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +86,11 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
       appBar: AppBar(
         title: const Text('Caregiver Dashboard'),
         actions: [
-          IconButton(icon: const Icon(Icons.refresh), tooltip: 'Refresh', onPressed: _refresh),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Refresh',
+            onPressed: _refresh,
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Sign out',
@@ -103,55 +109,78 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-              NenaviError('Failed to load patients.'),
-              ElevatedButton.icon(
-                  onPressed: _refresh,
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('Try Again')),
-            ]));
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  NenaviError('Failed to load patients.'),
+                  ElevatedButton.icon(
+                    onPressed: _refresh,
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Try Again'),
+                  ),
+                ],
+              ),
+            );
           }
 
           final patients = snapshot.data ?? [];
           if (patients.isEmpty) {
-            return Center(child: Padding(
-              padding: const EdgeInsets.all(32),
-              child: Column(mainAxisSize: MainAxisSize.min, children: [
-                Icon(Icons.people_outline, size: 72, color: NenaviTheme.secondary),
-                const SizedBox(height: 20),
-                Text('No patients linked yet.',
-                    style: NenaviTheme.subheading(color: NenaviTheme.accent),
-                    textAlign: TextAlign.center),
-                const SizedBox(height: 10),
-                Text('Ask your patients to register using your email address.',
-                    style: NenaviTheme.body(color: NenaviTheme.secondary),
-                    textAlign: TextAlign.center),
-                const SizedBox(height: 24),
-                ElevatedButton.icon(
-                    onPressed: _refresh,
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Refresh')),
-              ]),
-            ));
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.people_outline,
+                      size: 72,
+                      color: NenaviTheme.secondary,
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'No patients linked yet.',
+                      style: NenaviTheme.subheading(color: NenaviTheme.accent),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Ask your patients to register using your email address.',
+                      style: NenaviTheme.body(color: NenaviTheme.secondary),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      onPressed: _refresh,
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Refresh'),
+                    ),
+                  ],
+                ),
+              ),
+            );
           }
 
           return ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
             itemCount: patients.length,
             itemBuilder: (ctx, i) {
-              final p     = patients[i];
+              final p = patients[i];
               final score = p['latestScore'] as int? ?? 0;
               return _PatientCard(
                 email: p['email'] as String,
                 score: score,
                 date: p['latestDate'] as String,
                 hasScores: p['latestDate'] != 'No tests yet',
-                onTap: () => Navigator.push(context, MaterialPageRoute(
-                  builder: (_) => PatientHistoryScreen(
-                    patientUid: p['uid'],
-                    patientEmail: p['email'] as String?,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => PatientHistoryScreen(
+                      patientUid: p['uid'],
+                      patientEmail: p['email'] as String?,
+                    ),
                   ),
-                )).then((_) => _refresh()),
+                ).then((_) => _refresh()),
               );
             },
           );
@@ -184,52 +213,68 @@ class _PatientCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(18),
-          child: Row(children: [
-            Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                color: hasScores
-                    ? scoreColor(score)
-                    : NenaviTheme.cardBg,
-                borderRadius: BorderRadius.circular(14),
-                border: hasScores
-                    ? null
-                    : Border.all(color: NenaviTheme.secondary.withValues(alpha: 0.3)),
+          child: Row(
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: hasScores ? scoreColor(score) : NenaviTheme.cardBg,
+                  borderRadius: BorderRadius.circular(14),
+                  border: hasScores
+                      ? null
+                      : Border.all(
+                          color: NenaviTheme.secondary.withValues(alpha: 0.3),
+                        ),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      hasScores ? '$score' : '—',
+                      style: NenaviTheme.subheading(
+                        color: hasScores
+                            ? scoreTextColor(score)
+                            : NenaviTheme.secondary,
+                      ).copyWith(fontSize: 22),
+                    ),
+                    if (hasScores)
+                      Text(
+                        '/100',
+                        style: NenaviTheme.small(color: scoreTextColor(score)),
+                      ),
+                  ],
+                ),
               ),
-              child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                Text(
-                  hasScores ? '$score' : '—',
-                  style: NenaviTheme.subheading(
-                    color: hasScores
-                        ? scoreTextColor(score)
-                        : NenaviTheme.secondary,
-                  ).copyWith(fontSize: 22),
+              const SizedBox(width: 16),
+              // Info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      email,
+                      style: NenaviTheme.body(
+                        color: NenaviTheme.accent,
+                      ).copyWith(fontWeight: FontWeight.bold),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      hasScores ? 'Last tested: $date' : 'No tests yet',
+                      style: NenaviTheme.small(color: NenaviTheme.secondary),
+                    ),
+                  ],
                 ),
-                if (hasScores)
-                  Text('/100',
-                      style: NenaviTheme.small(color: scoreTextColor(score))),
-              ]),
-            ),
-            const SizedBox(width: 16),
-            // Info
-            Expanded(child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(email,
-                    style: NenaviTheme.body(color: NenaviTheme.accent)
-                        .copyWith(fontWeight: FontWeight.bold),
-                    maxLines: 1, overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 4),
-                Text(
-                  hasScores ? 'Last tested: $date' : 'No tests yet',
-                  style: NenaviTheme.small(color: NenaviTheme.secondary),
-                ),
-              ],
-            )),
-            const Icon(Icons.chevron_right_rounded,
-                color: NenaviTheme.secondary, size: 30),
-          ]),
+              ),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: NenaviTheme.secondary,
+                size: 30,
+              ),
+            ],
+          ),
         ),
       ),
     );

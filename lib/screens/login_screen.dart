@@ -5,6 +5,7 @@ import '../main.dart';
 import '../localization.dart';
 import '../widgets/language_selector.dart';
 import '../widgets/speakable_text.dart';
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -110,10 +111,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             offset: const Offset(0, 5),
                           ),
                         ],
-                        border: Border.all(
-                          color: NenaviTheme.accent,
-                          width: 4,
-                        ),
+                        border: Border.all(color: NenaviTheme.accent, width: 4),
                       ),
                       child: ClipOval(
                         child: Padding(
@@ -128,17 +126,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 20),
                   Center(
-                    child: SpeakableText(
-                      text: Localization.get('login_title', lang),
-                      language: lang,
-                      style: NenaviTheme.heading().copyWith(fontSize: 36, color: NenaviTheme.accent),
+                    child: Text(
+                      Localization.get('login_title', lang),
+                      style: NenaviTheme.heading().copyWith(
+                        fontSize: 36,
+                        color: NenaviTheme.accent,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   ),
                   Center(
-                    child: SpeakableText(
-                      text: Localization.get('login_subtitle', lang),
-                      language: lang,
+                    child: Text(
+                      Localization.get('login_subtitle', lang),
                       style: NenaviTheme.body(color: NenaviTheme.secondary),
                       textAlign: TextAlign.center,
                     ),
@@ -146,9 +145,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 40),
 
                   // ── Email ──────────────────────────────────────────────
-                  SpeakableText(
-                    text: Localization.get('email', lang),
-                    language: lang,
+                  Text(
+                    Localization.get('email', lang),
                     style: NenaviTheme.label(),
                   ),
                   const SizedBox(height: 8),
@@ -164,9 +162,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 20),
 
                   // ── Password ───────────────────────────────────────────
-                  SpeakableText(
-                    text: Localization.get('password', lang),
-                    language: lang,
+                  Text(
+                    Localization.get('password', lang),
                     style: NenaviTheme.label(),
                   ),
                   const SizedBox(height: 8),
@@ -178,9 +175,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       hintText: '••••••',
                       prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
-                        icon: Icon(_obscure
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined),
+                        icon: Icon(
+                          _obscure
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                        ),
                         onPressed: () => setState(() => _obscure = !_obscure),
                       ),
                     ),
@@ -193,17 +192,20 @@ class _LoginScreenState extends State<LoginScreen> {
                   // ── Sign in button ─────────────────────────────────────
                   _isLoading
                       ? const Center(child: CircularProgressIndicator())
-                      : SpeakableOptionButton(
+                      : ElevatedButton(
                           onPressed: _login,
-                          text: Localization.get('sign_in', lang),
-                          language: lang,
+                          child: Text(Localization.get('sign_in', lang)),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: NenaviTheme.primary,
                             foregroundColor: Colors.white,
                             minimumSize: const Size.fromHeight(58),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
                             textStyle: TextStyle(
-                              fontFamily: 'Georgia', fontSize: 20, fontWeight: FontWeight.bold,
+                              fontFamily: 'Georgia',
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
@@ -212,7 +214,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   // ── Register link ──────────────────────────────────────
                   Center(
                     child: TextButton(
-                      onPressed: () => Navigator.pushNamed(context, '/register'),
+                      onPressed: () =>
+                          Navigator.pushNamed(context, '/register'),
                       child: RichText(
                         text: TextSpan(
                           style: NenaviTheme.body(color: NenaviTheme.accent),

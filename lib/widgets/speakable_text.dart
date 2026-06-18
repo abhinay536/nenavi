@@ -46,54 +46,17 @@ class TtsService {
   }
 }
 
-class SpeakableText extends StatelessWidget {
-  final String text;
+class PlayAudioButton extends StatelessWidget {
+  final String textToRead;
   final String language;
-  final TextStyle? style;
-  final TextAlign? textAlign;
-  final int? maxLines;
-  final TextOverflow? overflow;
+  final String label;
 
-  const SpeakableText({
+  const PlayAudioButton({
     super.key,
-    required this.text,
+    required this.textToRead,
     required this.language,
-    this.style,
-    this.textAlign,
-    this.maxLines,
-    this.overflow,
+    required this.label,
   });
-
-  @override
-  Widget build(BuildContext context) {
-    final textWidget = Text(
-      text,
-      style: style,
-      textAlign: textAlign,
-      maxLines: maxLines,
-      overflow: overflow,
-    );
-
-    if (!TtsService.supportsLanguage(language)) {
-      return textWidget;
-    }
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Expanded(child: textWidget),
-        const SizedBox(width: 8),
-        SpeakerButton(text: text, language: language),
-      ],
-    );
-  }
-}
-
-class SpeakerButton extends StatelessWidget {
-  final String text;
-  final String language;
-
-  const SpeakerButton({super.key, required this.text, required this.language});
 
   @override
   Widget build(BuildContext context) {
@@ -101,50 +64,20 @@ class SpeakerButton extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    return IconButton(
-      icon: const Icon(Icons.volume_up_outlined),
-      tooltip: 'Speak',
-      onPressed: () => TtsService.speak(text, language),
-    );
-  }
-}
-
-class SpeakableOptionButton extends StatelessWidget {
-  final String text;
-  final String language;
-  final VoidCallback? onPressed;
-  final ButtonStyle? style;
-  final TextStyle? textStyle;
-  final TextAlign textAlign;
-
-  const SpeakableOptionButton({
-    super.key,
-    required this.text,
-    required this.language,
-    required this.onPressed,
-    this.style,
-    this.textStyle,
-    this.textAlign = TextAlign.center,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final button = ElevatedButton(
-      style: style,
-      onPressed: onPressed,
-      child: Text(text, style: textStyle, textAlign: textAlign),
-    );
-
-    if (!TtsService.supportsLanguage(language)) {
-      return button;
-    }
-
-    return Row(
-      children: [
-        Expanded(child: button),
-        const SizedBox(width: 8),
-        SpeakerButton(text: text, language: language),
-      ],
+    return ElevatedButton.icon(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.blue.shade50,
+        foregroundColor: Colors.blue.shade800,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: Colors.blue.shade200),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      ),
+      icon: const Icon(Icons.volume_up_rounded, size: 20),
+      label: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+      onPressed: () => TtsService.speak(textToRead, language),
     );
   }
 }

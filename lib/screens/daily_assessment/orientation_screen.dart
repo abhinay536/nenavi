@@ -19,8 +19,6 @@ class OrientationScreen extends StatefulWidget {
   State<OrientationScreen> createState() => _OrientationScreenState();
 }
 
-// Question order: month (MCQ), year (text), day (MCQ), state (MCQ)
-// Max score: 4
 class _OrientationScreenState extends State<OrientationScreen> {
   int _step = 0; // 0=month, 1=year, 2=day, 3=state
   int _score = 0;
@@ -90,36 +88,38 @@ class _OrientationScreenState extends State<OrientationScreen> {
           ),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: () {
-          switch (_step) {
-            case 0:
-              return _buildMcqQuestion(
-                question: _questions['month']!,
-                options: _monthOptions,
-                isCorrect: (sel) => sel == _correctMonth(),
-              );
-            case 1:
-              return _buildYearQuestion();
-            case 2:
-              return _buildMcqQuestion(
-                question: _questions['day']!,
-                options: _dayOptions,
-                isCorrect: (sel) => sel == _correctDay(),
-              );
-            case 3:
-              return _buildMcqQuestion(
-                question: _questions['state']!,
-                options: _stateOptions,
-                isCorrect: (sel) =>
-                    _stateOptions.indexOf(sel) ==
-                    QuestionBank.correctStateIndex,
-              );
-            default:
-              return const SizedBox.shrink();
-          }
-        }(),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: () {
+            switch (_step) {
+              case 0:
+                return _buildMcqQuestion(
+                  question: _questions['month']!,
+                  options: _monthOptions,
+                  isCorrect: (sel) => sel == _correctMonth(),
+                );
+              case 1:
+                return _buildYearQuestion();
+              case 2:
+                return _buildMcqQuestion(
+                  question: _questions['day']!,
+                  options: _dayOptions,
+                  isCorrect: (sel) => sel == _correctDay(),
+                );
+              case 3:
+                return _buildMcqQuestion(
+                  question: _questions['state']!,
+                  options: _stateOptions,
+                  isCorrect: (sel) =>
+                      _stateOptions.indexOf(sel) ==
+                      QuestionBank.correctStateIndex,
+                );
+              default:
+                return const SizedBox.shrink();
+            }
+          }(),
+        ),
       ),
     );
   }
@@ -130,73 +130,131 @@ class _OrientationScreenState extends State<OrientationScreen> {
     required bool Function(String) isCorrect,
   }) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const SizedBox(height: 20),
-        SpeakableText(
-          text: question,
-          language: widget.language,
-          style: const TextStyle(fontSize: 20),
+        Text(
+          question,
+          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 16),
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            PlayAudioButton(
+              textToRead: question,
+              language: widget.language,
+              label: 'Read Question',
+            ),
+            PlayAudioButton(
+              textToRead: options.join(', '),
+              language: widget.language,
+              label: 'Read Options',
+            ),
+          ],
+        ),
+        const SizedBox(height: 32),
         Expanded(
           child: ListView(
             children: options.map((option) {
               final isSelected = _selectedOption == option;
               return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: SpeakableOptionButton(
-                  text: option,
-                  language: widget.language,
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: isSelected ? Colors.blue.shade200 : null,
+                    backgroundColor: isSelected
+                        ? Colors.blue.shade400
+                        : Colors.white,
+                    foregroundColor: isSelected ? Colors.white : Colors.black87,
+                    elevation: isSelected ? 2 : 1,
                     alignment: Alignment.centerLeft,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 16,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(
+                        color: isSelected
+                            ? Colors.blue.shade600
+                            : Colors.grey.shade300,
+                      ),
+                    ),
                   ),
                   onPressed: () => setState(() => _selectedOption = option),
-                  textAlign: TextAlign.left,
+                  child: Text(
+                    option,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
               );
             }).toList(),
           ),
         ),
-        const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: _selectedOption == null
-                ? null
-                : () => _submitAndAdvance(isCorrect(_selectedOption!)),
-            child: const Text('Next'),
+        const SizedBox(height: 16),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            textStyle: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
+          onPressed: _selectedOption == null
+              ? null
+              : () => _submitAndAdvance(isCorrect(_selectedOption!)),
+          child: const Text('Next'),
         ),
-        const SizedBox(height: 20),
       ],
     );
   }
 
   Widget _buildYearQuestion() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        SpeakableText(
-          text: _questions['year']!,
-          language: widget.language,
-          style: const TextStyle(fontSize: 20),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 20),
-        TextField(
-          controller: _yearController,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            labelText: 'Year',
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            _questions['year']!,
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
           ),
-        ),
-        const SizedBox(height: 20),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
+          const SizedBox(height: 16),
+          Center(
+            child: PlayAudioButton(
+              textToRead: _questions['year']!,
+              language: widget.language,
+              label: 'Read Question',
+            ),
+          ),
+          const SizedBox(height: 32),
+          TextField(
+            controller: _yearController,
+            keyboardType: TextInputType.number,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            decoration: InputDecoration(
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              labelText: 'Year',
+            ),
+          ),
+          const SizedBox(height: 32),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              textStyle: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             onPressed: () {
               final correct =
                   _yearController.text.trim() == DateTime.now().year.toString();
@@ -204,8 +262,8 @@ class _OrientationScreenState extends State<OrientationScreen> {
             },
             child: const Text('Next'),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

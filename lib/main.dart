@@ -13,15 +13,16 @@ final ValueNotifier<String> globalLanguage = ValueNotifier<String>('en');
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  
+
   final prefs = await SharedPreferences.getInstance();
   final savedLang = prefs.getString('language');
   if (savedLang != null && ['en', 'kn', 'tcy'].contains(savedLang)) {
     globalLanguage.value = savedLang;
   } else {
-    globalLanguage.value = 'en'; // Default to English initially, they can change
+    globalLanguage.value =
+        'en'; // Default to English initially, they can change
   }
-  
+
   runApp(const NenaviApp());
 }
 
@@ -48,15 +49,16 @@ class NenaviApp extends StatelessWidget {
     );
   }
 }
+
 class NenaviTheme {
   // Brand colours
   static const Color background = Color(0xFFE9DBC3);
-  static const Color primary    = Color(0xFFFA7014);
-  static const Color secondary  = Color(0xFFB67549);
-  static const Color accent     = Color(0xFF371F0B);
-  static const Color textDark   = Color(0xFF000000);
-  static const Color cardBg     = Color(0xFFF5EDE0);
-  static const Color errorRed   = Color(0xFFB00020);
+  static const Color primary = Color(0xFFFA7014);
+  static const Color secondary = Color(0xFFB67549);
+  static const Color accent = Color(0xFF371F0B);
+  static const Color textDark = Color(0xFF000000);
+  static const Color cardBg = Color(0xFFF5EDE0);
+  static const Color errorRed = Color(0xFFB00020);
 
   // Shared text styles (Palatino Linotype, elder-friendly sizes)
   static const String _font = 'Georgia'; // fallback for Android; see note
@@ -66,23 +68,30 @@ class NenaviTheme {
   // GoogleFonts.imFellEnglish(). Using 'Georgia' here as safe fallback.
 
   static TextStyle heading({Color color = textDark}) => TextStyle(
-    fontFamily: _font, fontSize: 28, fontWeight: FontWeight.bold,
-    color: color, height: 1.3,
+    fontFamily: _font,
+    fontSize: 28,
+    fontWeight: FontWeight.bold,
+    color: color,
+    height: 1.3,
   );
   static TextStyle subheading({Color color = textDark}) => TextStyle(
-    fontFamily: _font, fontSize: 22, fontWeight: FontWeight.w600,
-    color: color, height: 1.3,
+    fontFamily: _font,
+    fontSize: 22,
+    fontWeight: FontWeight.w600,
+    color: color,
+    height: 1.3,
   );
-  static TextStyle body({Color color = textDark}) => TextStyle(
-    fontFamily: _font, fontSize: 18, color: color, height: 1.5,
-  );
+  static TextStyle body({Color color = textDark}) =>
+      TextStyle(fontFamily: _font, fontSize: 18, color: color, height: 1.5);
   static TextStyle label({Color color = accent}) => TextStyle(
-    fontFamily: _font, fontSize: 16, color: color,
-    fontWeight: FontWeight.w600, letterSpacing: 0.4,
+    fontFamily: _font,
+    fontSize: 16,
+    color: color,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0.4,
   );
-  static TextStyle small({Color color = accent}) => TextStyle(
-    fontFamily: _font, fontSize: 14, color: color,
-  );
+  static TextStyle small({Color color = accent}) =>
+      TextStyle(fontFamily: _font, fontSize: 14, color: color);
 
   static ThemeData get theme => ThemeData(
     useMaterial3: true,
@@ -100,8 +109,10 @@ class NenaviTheme {
       foregroundColor: Colors.white,
       elevation: 0,
       titleTextStyle: TextStyle(
-        fontFamily: _font, fontSize: 22,
-        fontWeight: FontWeight.bold, color: Colors.white,
+        fontFamily: _font,
+        fontSize: 22,
+        fontWeight: FontWeight.bold,
+        color: Colors.white,
       ),
       centerTitle: false,
     ),
@@ -112,7 +123,9 @@ class NenaviTheme {
         minimumSize: const Size.fromHeight(58),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         textStyle: TextStyle(
-          fontFamily: _font, fontSize: 20, fontWeight: FontWeight.bold,
+          fontFamily: _font,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
         ),
         elevation: 3,
       ),
@@ -121,7 +134,9 @@ class NenaviTheme {
       style: TextButton.styleFrom(
         foregroundColor: secondary,
         textStyle: TextStyle(
-          fontFamily: _font, fontSize: 17, fontWeight: FontWeight.w600,
+          fontFamily: _font,
+          fontSize: 17,
+          fontWeight: FontWeight.w600,
         ),
       ),
     ),
@@ -129,11 +144,11 @@ class NenaviTheme {
       filled: true,
       fillColor: Colors.white.withValues(alpha: 0.85),
       contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
-      labelStyle: TextStyle(
-        fontFamily: _font, fontSize: 17, color: accent,
-      ),
+      labelStyle: TextStyle(fontFamily: _font, fontSize: 17, color: accent),
       hintStyle: TextStyle(
-        fontFamily: _font, fontSize: 16, color: Colors.grey.shade500,
+        fontFamily: _font,
+        fontSize: 16,
+        color: Colors.grey.shade500,
       ),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -141,7 +156,10 @@ class NenaviTheme {
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: secondary.withValues(alpha: 0.4), width: 1.5),
+        borderSide: BorderSide(
+          color: secondary.withValues(alpha: 0.4),
+          width: 1.5,
+        ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -196,11 +214,18 @@ class NenaviError extends StatelessWidget {
       borderRadius: BorderRadius.circular(12),
       border: Border.all(color: NenaviTheme.errorRed.withValues(alpha: 0.5)),
     ),
-    child: Row(children: [
-      const Icon(Icons.error_outline, color: NenaviTheme.errorRed, size: 26),
-      const SizedBox(width: 10),
-      Expanded(child: Text(message, style: NenaviTheme.body(color: NenaviTheme.errorRed))),
-    ]),
+    child: Row(
+      children: [
+        const Icon(Icons.error_outline, color: NenaviTheme.errorRed, size: 26),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            message,
+            style: NenaviTheme.body(color: NenaviTheme.errorRed),
+          ),
+        ),
+      ],
+    ),
   );
 }
 
@@ -210,6 +235,7 @@ Color scoreColor(int score) {
   if (score >= 50) return const Color(0xFFFFF3CD);
   return const Color(0xFFFFDDD8);
 }
+
 Color scoreTextColor(int score) {
   if (score >= 80) return const Color(0xFF155724);
   if (score >= 50) return const Color(0xFF856404);

@@ -60,7 +60,7 @@ class _AssessmentTimerState extends State<AssessmentTimer> {
   @override
   Widget build(BuildContext context) {
     final bool isWarning = _remaining.inMinutes < 2;
-    
+
     return ValueListenableBuilder<String>(
       valueListenable: globalLanguage,
       builder: (context, lang, child) {

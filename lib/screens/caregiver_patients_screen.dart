@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:nenavi/screens/patient_history_screen.dart';
 import '../main.dart';
 import '../services/patient_link_service.dart';
+
 class CaregiverPatientsScreen extends StatefulWidget {
   const CaregiverPatientsScreen({super.key});
 
@@ -48,7 +49,7 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
     }
   }
 
- @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: NenaviTheme.background,
@@ -61,8 +62,12 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
           }
           final patients = snapshot.data ?? [];
           if (patients.isEmpty) {
-            return Center(child: Text('No patients found.',
-                style: NenaviTheme.body(color: NenaviTheme.accent)));
+            return Center(
+              child: Text(
+                'No patients found.',
+                style: NenaviTheme.body(color: NenaviTheme.accent),
+              ),
+            );
           }
           return ListView.builder(
             padding: const EdgeInsets.all(20),
@@ -73,19 +78,33 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
                 margin: const EdgeInsets.only(bottom: 12),
                 child: ListTile(
                   contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 18, vertical: 10),
+                    horizontal: 18,
+                    vertical: 10,
+                  ),
                   leading: CircleAvatar(
-                    backgroundColor: NenaviTheme.primary.withValues(alpha: 0.15),
+                    backgroundColor: NenaviTheme.primary.withValues(
+                      alpha: 0.15,
+                    ),
                     child: const Icon(Icons.person, color: NenaviTheme.primary),
                   ),
-                  title: Text(p['email'] ?? 'Unknown',
-                      style: NenaviTheme.body(color: NenaviTheme.accent)
-                          .copyWith(fontWeight: FontWeight.bold)),
-                  trailing: const Icon(Icons.chevron_right_rounded,
-                      color: NenaviTheme.secondary, size: 28),
-                  onTap: () => Navigator.push(context, MaterialPageRoute(
-                    builder: (_) => PatientHistoryScreen(patientUid: p['uid']),
-                  )),
+                  title: Text(
+                    p['email'] ?? 'Unknown',
+                    style: NenaviTheme.body(
+                      color: NenaviTheme.accent,
+                    ).copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  trailing: const Icon(
+                    Icons.chevron_right_rounded,
+                    color: NenaviTheme.secondary,
+                    size: 28,
+                  ),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          PatientHistoryScreen(patientUid: p['uid']),
+                    ),
+                  ),
                 ),
               );
             },
@@ -95,4 +114,3 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
     );
   }
 }
- 

@@ -57,43 +57,92 @@ class _IncidentalMemoryScreenState extends State<IncidentalMemoryScreen> {
           ),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SpeakableText(
-              text: _instruction,
-              language: widget.language,
-              style: const TextStyle(fontSize: 18),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 30),
-            ..._options.map(
-              (opt) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                child: SpeakableOptionButton(
-                  text: opt,
-                  language: widget.language,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _selectedOption == opt
-                        ? Colors.blue.shade200
-                        : null,
-                  ),
-                  onPressed: () => setState(() => _selectedOption = opt),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                _instruction,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
                 ),
+                textAlign: TextAlign.center,
               ),
-            ),
-            const SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: _selectedOption == null
-                  ? null
-                  : () => widget.onComplete(
-                      _selectedOption == _correctOption ? 1 : 0,
+              const SizedBox(height: 16),
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  PlayAudioButton(
+                    textToRead: _instruction,
+                    language: widget.language,
+                    label: 'Read Question',
+                  ),
+                  PlayAudioButton(
+                    textToRead: _options.join(', '),
+                    language: widget.language,
+                    label: 'Read Options',
+                  ),
+                ],
+              ),
+              const SizedBox(height: 32),
+              ..._options.map((opt) {
+                final isSelected = _selectedOption == opt;
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isSelected
+                          ? Colors.blue.shade400
+                          : Colors.white,
+                      foregroundColor: isSelected
+                          ? Colors.white
+                          : Colors.black87,
+                      elevation: isSelected ? 2 : 1,
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(
+                          color: isSelected
+                              ? Colors.blue.shade600
+                              : Colors.grey.shade300,
+                        ),
+                      ),
                     ),
-              child: const Text('Submit'),
-            ),
-          ],
+                    onPressed: () => setState(() => _selectedOption = opt),
+                    child: Text(
+                      opt,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                );
+              }),
+              const SizedBox(height: 32),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  textStyle: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                onPressed: _selectedOption == null
+                    ? null
+                    : () => widget.onComplete(
+                        _selectedOption == _correctOption ? 1 : 0,
+                      ),
+                child: const Text('Submit'),
+              ),
+            ],
+          ),
         ),
       ),
     );

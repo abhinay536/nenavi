@@ -256,9 +256,8 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // ── Greeting ──────────────────────────────────────────────
-                SpeakableText(
-                  text: Localization.get('good_day', lang),
-                  language: lang,
+                Text(
+                  Localization.get('good_day', lang),
                   style: NenaviTheme.heading(color: NenaviTheme.accent),
                 ),
                 Text(
@@ -269,7 +268,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 // ── Last score card ────────────────────────────────────────
                 if (_lastScore != null) ...[
-                  _ScoreCard(score: _lastScore!, date: _lastDate ?? '', lang: lang),
+                  _ScoreCard(
+                    score: _lastScore!,
+                    date: _lastDate ?? '',
+                    lang: lang,
+                  ),
                   const SizedBox(height: 28),
                 ],
 
@@ -295,7 +298,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   buttonLabel: Localization.get('view_scores', lang),
                   onTap: () => Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const PatientHistoryScreen()),
+                    MaterialPageRoute(
+                      builder: (_) => const PatientHistoryScreen(),
+                    ),
                   ),
                   lang: lang,
                 ),
@@ -309,13 +314,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-
-
 class _ScoreCard extends StatelessWidget {
   final int score;
   final String date;
   final String lang;
-  const _ScoreCard({required this.score, required this.date, required this.lang});
+  const _ScoreCard({
+    required this.score,
+    required this.date,
+    required this.lang,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -345,9 +352,8 @@ class _ScoreCard extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SpeakableText(
-                text: Localization.get('last_score', lang),
-                language: lang,
+              Text(
+                Localization.get('last_score', lang),
                 style: NenaviTheme.label(color: scoreTextColor(score)),
               ),
               Text(
@@ -417,15 +423,13 @@ class _BigActionCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SpeakableText(
-                      text: title,
-                      language: lang,
+                    Text(
+                      title,
                       style: NenaviTheme.subheading(color: NenaviTheme.accent),
                     ),
                     const SizedBox(height: 4),
-                    SpeakableText(
-                      text: subtitle,
-                      language: lang,
+                    Text(
+                      subtitle,
                       style: NenaviTheme.body(
                         color: NenaviTheme.secondary,
                       ).copyWith(fontSize: 15),
@@ -438,11 +442,7 @@ class _BigActionCard extends StatelessWidget {
           const SizedBox(height: 18),
           loading
               ? const Center(child: CircularProgressIndicator())
-              : SpeakableOptionButton(
-                  onPressed: onTap,
-                  text: buttonLabel,
-                  language: lang,
-                ),
+              : ElevatedButton(onPressed: onTap, child: Text(buttonLabel)),
         ],
       ),
     );

@@ -27,8 +27,8 @@ class _DelayedWordRecallScreenState extends State<DelayedWordRecallScreen> {
   late Set<String> _selectedWords;
 
   static const Map<String, String> _instructions = {
-    'kn': 'ಆರಂಭದಲ್ಲಿ ನೀವು ನೆನಪಿಟ್ಟ 5 ಪದಗಳನ್ನು ಆರಿಸಿ:',
-    'tcy': 'ದುಂಬು ನೆಂಪು ಮಲ್ತಿನ 5 ಪದೊಲೆನ್ ಆಯ್ಕೆ ಮಲ್ಪುಲೆ:',
+    'kn': 'ನೀವು ಮೊದಲು ನೆನಪಿಟ್ಟುಕೊಂಡ 5 ಪದಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಿ:',
+    'tcy': 'ಈರ್ ದುಂಬು ನೆಂಪು ಮಲ್ತಿನ 5 ಪದೊಕುಲೆನ್ ಆಯ್ಕೆ ಮಲ್ಪುಲೆ:',
     'en': 'Select the 5 words you remembered from earlier:',
   };
 
@@ -61,64 +61,118 @@ class _DelayedWordRecallScreenState extends State<DelayedWordRecallScreen> {
                 final correct = _selectedWords
                     .where((w) => widget.originalWords.contains(w))
                     .length;
-                widget.onComplete(correct);
+                if (mounted) widget.onComplete(correct);
               },
             ),
           ),
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
-            SpeakableText(
-              text: instruction,
-              language: widget.language,
-              style: const TextStyle(fontSize: 18),
+            Text(
+              instruction,
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                PlayAudioButton(
+                  textToRead: instruction,
+                  language: widget.language,
+                  label: 'Read Question',
+                ),
+                PlayAudioButton(
+                  textToRead: _allWords.join(', '),
+                  language: widget.language,
+                  label: 'Read Options',
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
             Text(
               '${_selectedWords.length}/5 selected',
-              style: const TextStyle(color: Colors.grey),
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.blueGrey,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             Expanded(
               child: GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  childAspectRatio: 3,
+                  childAspectRatio: 2.5,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
                 ),
                 itemCount: _allWords.length,
                 itemBuilder: (ctx, index) {
                   final word = _allWords[index];
                   final isSelected = _selectedWords.contains(word);
-                  return Card(
-                    color: isSelected ? Colors.green.shade100 : null,
-                    child: ListTile(
-                      title: Text(word),
-                      trailing: SpeakerButton(
-                        text: word,
-                        language: widget.language,
+                  return InkWell(
+                    onTap: () {
+                      setState(() {
+                        if (isSelected) {
+                          _selectedWords.remove(word);
+                        } else if (_selectedWords.length < 5) {
+                          _selectedWords.add(word);
+                        }
+                      });
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? Colors.green.shade400
+                            : Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isSelected
+                              ? Colors.green.shade600
+                              : Colors.grey.shade300,
+                          width: 2,
+                        ),
+                        boxShadow: [
+                          if (isSelected)
+                            BoxShadow(
+                              color: Colors.green.shade100,
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                        ],
                       ),
-                      onTap: () {
-                        setState(() {
-                          if (isSelected) {
-                            _selectedWords.remove(word);
-                          } else if (_selectedWords.length < 5) {
-                            _selectedWords.add(word);
-                          }
-                        });
-                      },
+                      alignment: Alignment.center,
+                      child: Text(
+                        word,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: isSelected ? Colors.white : Colors.black87,
+                        ),
+                      ),
                     ),
                   );
                 },
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  textStyle: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 onPressed: _selectedWords.length == 5
                     ? () {
                         final correct = _selectedWords
@@ -130,7 +184,6 @@ class _DelayedWordRecallScreenState extends State<DelayedWordRecallScreen> {
                 child: const Text('Submit'),
               ),
             ),
-            const SizedBox(height: 16),
           ],
         ),
       ),

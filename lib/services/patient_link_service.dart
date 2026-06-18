@@ -17,14 +17,16 @@ class PatientLinkService {
         .collection('patients')
         .doc(patientUid)
         .set({
-      'patientUid': patientUid,
-      'patientEmail': patientEmail,
-      'linkedAt': FieldValue.serverTimestamp(),
-    });
+          'patientUid': patientUid,
+          'patientEmail': patientEmail,
+          'linkedAt': FieldValue.serverTimestamp(),
+        });
   }
 
   /// Moves any legacy `pending_patient_links` into the caregiver's patient list.
-  static Future<void> processPendingLinksForCaregiver(String caregiverUid) async {
+  static Future<void> processPendingLinksForCaregiver(
+    String caregiverUid,
+  ) async {
     try {
       final pending = await FirebaseFirestore.instance
           .collection('pending_patient_links')
