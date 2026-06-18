@@ -55,12 +55,19 @@ service cloud.firestore {
     }
     
     // Scores collection
-    match /scores/{document=**} {
-      // Allow patient to read/write their own scores
-      allow read, write: if request.auth.uid == resource.data.patientUid;
-      
-      // Allow caregiver to read their patient's scores
-      allow read: if isCaregiver(request.auth.uid) 
+    match /scores/{scoreId} {
+      // Patient creates their own score documents
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.patientUid;
+      // Patient updates/deletes their own scores
+      allow update, delete: if request.auth != null
+        && request.auth.uid == resource.data.patientUid;
+      // Patient reads their own scores
+      allow read: if request.auth != null
+        && request.auth.uid == resource.data.patientUid;
+      // Caregiver reads linked patient scores
+      allow read: if request.auth != null
+        && isCaregiver(request.auth.uid)
         && hasPatient(request.auth.uid, resource.data.patientUid);
     }
   }

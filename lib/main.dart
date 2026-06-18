@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
@@ -7,9 +8,20 @@ import 'screens/caregiver_home_screen.dart';
 import 'screens/caregiver_patients_screen.dart';
 import 'home_screen.dart';
 
+final ValueNotifier<String> globalLanguage = ValueNotifier<String>('en');
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  
+  final prefs = await SharedPreferences.getInstance();
+  final savedLang = prefs.getString('language');
+  if (savedLang != null && ['en', 'kn', 'tcy'].contains(savedLang)) {
+    globalLanguage.value = savedLang;
+  } else {
+    globalLanguage.value = 'en'; // Default to English initially, they can change
+  }
+  
   runApp(const NenaviApp());
 }
 
@@ -115,7 +127,7 @@ class NenaviTheme {
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: Colors.white.withOpacity(0.85),
+      fillColor: Colors.white.withValues(alpha: 0.85),
       contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
       labelStyle: TextStyle(
         fontFamily: _font, fontSize: 17, color: accent,
@@ -125,11 +137,11 @@ class NenaviTheme {
       ),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: secondary.withOpacity(0.4)),
+        borderSide: BorderSide(color: secondary.withValues(alpha: 0.4)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: secondary.withOpacity(0.4), width: 1.5),
+        borderSide: BorderSide(color: secondary.withValues(alpha: 0.4), width: 1.5),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -182,7 +194,7 @@ class NenaviError extends StatelessWidget {
     decoration: BoxDecoration(
       color: const Color(0xFFFFEDED),
       borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: NenaviTheme.errorRed.withOpacity(0.5)),
+      border: Border.all(color: NenaviTheme.errorRed.withValues(alpha: 0.5)),
     ),
     child: Row(children: [
       const Icon(Icons.error_outline, color: NenaviTheme.errorRed, size: 26),

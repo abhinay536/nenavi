@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'patient_history_screen.dart';
 import '../main.dart';
 import '../services/patient_link_service.dart';
+import '../services/score_service.dart';
 
 class CaregiverHomeScreen extends StatefulWidget {
   const CaregiverHomeScreen({super.key});
@@ -43,40 +44,27 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
         final patientEmail = patientData['patientEmail'] as String? ?? 'Unknown';
 
         if (patientUid != null && patientUid.isNotEmpty) {
-          // Fetch latest score for this patient
+          int latestScore = 0;
+          String latestDate = 'No tests yet';
+
           try {
-            final scoreSnapshot = await FirebaseFirestore.instance
-                .collection('scores')
-                .where('patientUid', isEqualTo: patientUid)
-                .orderBy('date', descending: true)
-                .limit(1)
-                .get()
-                .timeout(const Duration(seconds: 10));
-
-            int latestScore = 0;
-            String latestDate = 'No data';
-
-            if (scoreSnapshot.docs.isNotEmpty) {
-              final scoreData = scoreSnapshot.docs.first.data();
-              latestScore = scoreData['compositeScore'] as int? ?? 0;
-              latestDate = scoreData['date'] as String? ?? 'Unknown';
+            final latest = await ScoreService.fetchLatestScoreForPatient(
+              patientUid,
+            );
+            if (latest != null) {
+              latestScore = latest['compositeScore'] as int? ?? 0;
+              latestDate = latest['date'] as String? ?? 'Unknown';
             }
-
-            patientsData.add({
-              'uid': patientUid,
-              'email': patientEmail,
-              'latestScore': latestScore,
-              'latestDate': latestDate,
-            });
           } catch (e) {
             debugPrint('Error fetching score for patient $patientUid: $e');
-            patientsData.add({
-              'uid': patientUid,
-              'email': patientEmail,
-              'latestScore': 0,
-              'latestDate': 'Error loading',
-            });
           }
+
+          patientsData.add({
+            'uid': patientUid,
+            'email': patientEmail,
+            'latestScore': latestScore,
+            'latestDate': latestDate,
+          });
         }
       }
 
@@ -87,15 +75,9 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
     }
   }
 
-  Color _getScoreColor(int score) {
-    if (score >= 80) return Colors.green.shade100;
-    if (score >= 50) return Colors.orange.shade100;
-    return Colors.red.shade100;
-  }
-
   void _refresh() => setState(() => _patientDataFuture = _fetchPatientsWithLatestScores());
 
-   @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: NenaviTheme.background,
@@ -108,7 +90,8 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
             tooltip: 'Sign out',
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
-              if (mounted) Navigator.pushReplacementNamed(context, '/login');
+              if (!context.mounted) return;
+              Navigator.pushReplacementNamed(context, '/login');
             },
           ),
         ],
@@ -162,8 +145,12 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
                 email: p['email'] as String,
                 score: score,
                 date: p['latestDate'] as String,
+                hasScores: p['latestDate'] != 'No tests yet',
                 onTap: () => Navigator.push(context, MaterialPageRoute(
-                  builder: (_) => PatientHistoryScreen(patientUid: p['uid']),
+                  builder: (_) => PatientHistoryScreen(
+                    patientUid: p['uid'],
+                    patientEmail: p['email'] as String?,
+                  ),
                 )).then((_) => _refresh()),
               );
             },
@@ -178,10 +165,14 @@ class _PatientCard extends StatelessWidget {
   final String email;
   final int score;
   final String date;
+  final bool hasScores;
   final VoidCallback onTap;
   const _PatientCard({
-    required this.email, required this.score,
-    required this.date,  required this.onTap,
+    required this.email,
+    required this.score,
+    required this.date,
+    required this.hasScores,
+    required this.onTap,
   });
 
   @override
@@ -194,19 +185,30 @@ class _PatientCard extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(18),
           child: Row(children: [
-            // Score badge
             Container(
-              width: 64, height: 64,
+              width: 64,
+              height: 64,
               decoration: BoxDecoration(
-                color: scoreColor(score),
+                color: hasScores
+                    ? scoreColor(score)
+                    : NenaviTheme.cardBg,
                 borderRadius: BorderRadius.circular(14),
+                border: hasScores
+                    ? null
+                    : Border.all(color: NenaviTheme.secondary.withValues(alpha: 0.3)),
               ),
               child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                Text('$score',
-                    style: NenaviTheme.subheading(color: scoreTextColor(score))
-                        .copyWith(fontSize: 22)),
-                Text('/100',
-                    style: NenaviTheme.small(color: scoreTextColor(score))),
+                Text(
+                  hasScores ? '$score' : '—',
+                  style: NenaviTheme.subheading(
+                    color: hasScores
+                        ? scoreTextColor(score)
+                        : NenaviTheme.secondary,
+                  ).copyWith(fontSize: 22),
+                ),
+                if (hasScores)
+                  Text('/100',
+                      style: NenaviTheme.small(color: scoreTextColor(score))),
               ]),
             ),
             const SizedBox(width: 16),
@@ -219,8 +221,10 @@ class _PatientCard extends StatelessWidget {
                         .copyWith(fontWeight: FontWeight.bold),
                     maxLines: 1, overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 4),
-                Text('Last tested: $date',
-                    style: NenaviTheme.small(color: NenaviTheme.secondary)),
+                Text(
+                  hasScores ? 'Last tested: $date' : 'No tests yet',
+                  style: NenaviTheme.small(color: NenaviTheme.secondary),
+                ),
               ],
             )),
             const Icon(Icons.chevron_right_rounded,

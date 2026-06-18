@@ -1,5 +1,5 @@
-/// Nenavi Question Bank — SATURN questions
-/// Languages: 'kn' (Kannada), 'tcy' (Tulu), 'en' (English)
+// Nenavi Question Bank — SATURN questions
+// Languages: 'kn' (Kannada), 'tcy' (Tulu), 'en' (English)
 
 class QuestionBank {
   // ============================================================

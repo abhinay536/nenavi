@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'screens/daily_assessment/attention_task_screen.dart';
@@ -11,6 +10,9 @@ import 'screens/daily_assessment/incidental_memory_screen.dart';
 import 'package:nenavi/screens/patient_history_screen.dart';
 import 'services/database_helper.dart';
 import 'main.dart';
+import 'localization.dart';
+import 'widgets/language_selector.dart';
+import 'widgets/speakable_text.dart';
 import 'dart:convert';
 
 class HomeScreen extends StatefulWidget {
@@ -20,7 +22,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String _language = 'kn';
   int? _lastScore;
   String? _lastDate;
   bool _isAssessing = false;
@@ -32,10 +33,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadData() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (!mounted) return;
-    final savedLanguage = prefs.getString('language');
-    setState(() => _language = _supportedLanguage(savedLanguage));
     final user = FirebaseAuth.instance.currentUser;
     final latest = await DatabaseHelper().getLatestScore(patientUid: user?.uid);
     if (!mounted) return;
@@ -47,33 +44,28 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  String _supportedLanguage(String? language) {
-    return language == 'en' || language == 'kn' ? language! : 'kn';
-  }
-
-  Future<void> _setLanguage(String language) async {
-    final selected = _supportedLanguage(language);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('language', selected);
-    if (!mounted) return;
-    setState(() => _language = selected);
-  }
-
   Future<void> _startAssessment() async {
     if (_isAssessing) return;
     setState(() => _isAssessing = true);
+    final lang = globalLanguage.value;
+    final endTime = DateTime.now().add(const Duration(minutes: 10));
+
     try {
       final attResult = await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (ctx) => AttentionTaskScreen(
-            language: _language,
+            language: lang,
+            endTime: endTime,
             onComplete: (score, seed, enteredNumber) =>
                 Navigator.pop(ctx, [score, seed, enteredNumber]),
           ),
         ),
       );
-      if (!mounted || attResult == null) return;
+      if (!mounted || attResult == null) {
+        setState(() => _isAssessing = false);
+        return; // Timed out or cancelled
+      }
       final attScore = (attResult as List)[0] as int;
       final seedPhrase = attResult[1] as String;
 
@@ -82,67 +74,87 @@ class _HomeScreenState extends State<HomeScreen> {
                 context,
                 MaterialPageRoute(
                   builder: (ctx) => WordRecallEncodingScreen(
-                    language: _language,
+                    language: lang,
+                    endTime: endTime,
                     onComplete: (w) => Navigator.pop(ctx, w),
                   ),
                 ),
               )
               as List<String>?;
-      if (!mounted || encodedWords == null) return;
+      if (!mounted || encodedWords == null) {
+        setState(() => _isAssessing = false);
+        return;
+      }
 
       final incidentalScore =
           await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (ctx) => IncidentalMemoryScreen(
-                    language: _language,
+                    language: lang,
+                    endTime: endTime,
                     seedPhrase: seedPhrase,
                     onComplete: (s) => Navigator.pop(ctx, s),
                   ),
                 ),
               )
               as int?;
-      if (!mounted || incidentalScore == null) return;
+      if (!mounted || incidentalScore == null) {
+        setState(() => _isAssessing = false);
+        return;
+      }
 
       final orientationScore =
           await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (ctx) => OrientationScreen(
-                    language: _language,
+                    language: lang,
+                    endTime: endTime,
                     onComplete: (s) => Navigator.pop(ctx, s),
                   ),
                 ),
               )
               as int?;
-      if (!mounted || orientationScore == null) return;
+      if (!mounted || orientationScore == null) {
+        setState(() => _isAssessing = false);
+        return;
+      }
 
       final calcScore =
           await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (ctx) => CalculationScreen(
-                    language: _language,
+                    language: lang,
+                    endTime: endTime,
                     onComplete: (s) => Navigator.pop(ctx, s),
                   ),
                 ),
               )
               as int?;
-      if (!mounted || calcScore == null) return;
+      if (!mounted || calcScore == null) {
+        setState(() => _isAssessing = false);
+        return;
+      }
 
       final delayedScore =
           await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (ctx) => DelayedWordRecallScreen(
-                    language: _language,
+                    language: lang,
+                    endTime: endTime,
                     originalWords: encodedWords,
                     onComplete: (s) => Navigator.pop(ctx, s),
                   ),
                 ),
               )
               as int?;
-      if (!mounted || delayedScore == null) return;
+      if (!mounted || delayedScore == null) {
+        setState(() => _isAssessing = false);
+        return;
+      }
 
       const int maxTotal = 14;
       final total =
@@ -190,6 +202,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       if (!mounted) return;
       await _loadData();
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Assessment complete! Score: $composite / 100'),
@@ -214,150 +227,95 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
-    return Scaffold(
-      backgroundColor: NenaviTheme.background,
-      appBar: AppBar(
-        title: const Text('My Dashboard'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Sign out',
-            onPressed: () async {
-              await FirebaseAuth.instance.signOut();
-              if (mounted) Navigator.pushReplacementNamed(context, '/login');
-            },
-          ),
-        ],
-      ),
-      body: NenaviPage(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // ── Greeting ──────────────────────────────────────────────
-            Text(
-              'Good day!',
-              style: NenaviTheme.heading(color: NenaviTheme.accent),
-            ),
-            Text(
-              user?.email ?? '',
-              style: NenaviTheme.body(color: NenaviTheme.secondary),
-            ),
-            const SizedBox(height: 28),
-
-            // ── Last score card ────────────────────────────────────────
-            if (_lastScore != null) ...[
-              _ScoreCard(score: _lastScore!, date: _lastDate ?? ''),
-              const SizedBox(height: 28),
-            ],
-
-            _LanguageCard(
-              selectedLanguage: _language,
-              onChanged: _isAssessing ? null : _setLanguage,
-            ),
-            const SizedBox(height: 16),
-
-            // ── Start assessment ───────────────────────────────────────
-            _BigActionCard(
-              icon: Icons.assignment_outlined,
-              title: 'Daily Assessment',
-              subtitle:
-                  'Takes about 5–10 minutes.\nDo it at the same time each day.',
-              buttonLabel: _isAssessing
-                  ? 'In progress…'
-                  : 'Start Today\'s Test',
-              onTap: _isAssessing ? null : _startAssessment,
-              loading: _isAssessing,
-            ),
-            const SizedBox(height: 16),
-
-            // ── View history ───────────────────────────────────────────
-            _BigActionCard(
-              icon: Icons.bar_chart_rounded,
-              title: 'Score History',
-              subtitle: 'See how you have been doing over time.',
-              buttonLabel: 'View My Scores',
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const PatientHistoryScreen()),
+    return ValueListenableBuilder<String>(
+      valueListenable: globalLanguage,
+      builder: (context, lang, child) {
+        return Scaffold(
+          backgroundColor: NenaviTheme.background,
+          appBar: AppBar(
+            title: Text(Localization.get('dashboard_title', lang)),
+            actions: [
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8.0),
+                child: LanguageSelector(),
               ),
+              IconButton(
+                icon: const Icon(Icons.logout),
+                tooltip: Localization.get('sign_out', lang),
+                onPressed: () async {
+                  await FirebaseAuth.instance.signOut();
+                  if (!context.mounted) return;
+                  Navigator.pushReplacementNamed(context, '/login');
+                },
+              ),
+            ],
+          ),
+          body: NenaviPage(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // ── Greeting ──────────────────────────────────────────────
+                SpeakableText(
+                  text: Localization.get('good_day', lang),
+                  language: lang,
+                  style: NenaviTheme.heading(color: NenaviTheme.accent),
+                ),
+                Text(
+                  user?.email ?? '',
+                  style: NenaviTheme.body(color: NenaviTheme.secondary),
+                ),
+                const SizedBox(height: 28),
+
+                // ── Last score card ────────────────────────────────────────
+                if (_lastScore != null) ...[
+                  _ScoreCard(score: _lastScore!, date: _lastDate ?? '', lang: lang),
+                  const SizedBox(height: 28),
+                ],
+
+                // ── Start assessment ───────────────────────────────────────
+                _BigActionCard(
+                  icon: Icons.assignment_outlined,
+                  title: Localization.get('start_test', lang),
+                  subtitle: Localization.get('test_subtitle', lang),
+                  buttonLabel: _isAssessing
+                      ? Localization.get('test_in_progress', lang)
+                      : Localization.get('start_test', lang),
+                  onTap: _isAssessing ? null : _startAssessment,
+                  loading: _isAssessing,
+                  lang: lang,
+                ),
+                const SizedBox(height: 16),
+
+                // ── View history ───────────────────────────────────────────
+                _BigActionCard(
+                  icon: Icons.bar_chart_rounded,
+                  title: Localization.get('score_history', lang),
+                  subtitle: Localization.get('history_subtitle', lang),
+                  buttonLabel: Localization.get('view_scores', lang),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const PatientHistoryScreen()),
+                  ),
+                  lang: lang,
+                ),
+                const SizedBox(height: 32),
+              ],
             ),
-            const SizedBox(height: 32),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
 
-class _LanguageCard extends StatelessWidget {
-  final String selectedLanguage;
-  final ValueChanged<String>? onChanged;
 
-  const _LanguageCard({
-    required this.selectedLanguage,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: NenaviTheme.cardBg,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: NenaviTheme.accent.withOpacity(0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            'Test Language',
-            style: NenaviTheme.subheading(color: NenaviTheme.accent),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Choose before starting today\'s assessment.',
-            style: NenaviTheme.body(
-              color: NenaviTheme.secondary,
-            ).copyWith(fontSize: 15),
-          ),
-          const SizedBox(height: 16),
-          SegmentedButton<String>(
-            segments: const [
-              ButtonSegment(
-                value: 'kn',
-                label: Text('Kannada'),
-                icon: Icon(Icons.translate),
-              ),
-              ButtonSegment(
-                value: 'en',
-                label: Text('English'),
-                icon: Icon(Icons.language),
-              ),
-            ],
-            selected: {selectedLanguage == 'en' ? 'en' : 'kn'},
-            onSelectionChanged: onChanged == null
-                ? null
-                : (selection) => onChanged!(selection.first),
-            showSelectedIcon: false,
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class _ScoreCard extends StatelessWidget {
   final int score;
   final String date;
-  const _ScoreCard({required this.score, required this.date});
+  final String lang;
+  const _ScoreCard({required this.score, required this.date, required this.lang});
 
   @override
   Widget build(BuildContext context) {
@@ -367,7 +325,7 @@ class _ScoreCard extends StatelessWidget {
         color: scoreColor(score),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: scoreTextColor(score).withOpacity(0.25),
+          color: scoreTextColor(score).withValues(alpha: 0.25),
           width: 1.5,
         ),
       ),
@@ -375,7 +333,7 @@ class _ScoreCard extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 34,
-            backgroundColor: scoreTextColor(score).withOpacity(0.15),
+            backgroundColor: scoreTextColor(score).withValues(alpha: 0.15),
             child: Text(
               '$score',
               style: NenaviTheme.heading(
@@ -387,8 +345,9 @@ class _ScoreCard extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Last Score',
+              SpeakableText(
+                text: Localization.get('last_score', lang),
+                language: lang,
                 style: NenaviTheme.label(color: scoreTextColor(score)),
               ),
               Text(
@@ -414,6 +373,7 @@ class _BigActionCard extends StatelessWidget {
   final String buttonLabel;
   final VoidCallback? onTap;
   final bool loading;
+  final String lang;
   const _BigActionCard({
     required this.icon,
     required this.title,
@@ -421,6 +381,7 @@ class _BigActionCard extends StatelessWidget {
     required this.buttonLabel,
     this.onTap,
     this.loading = false,
+    required this.lang,
   });
 
   @override
@@ -432,7 +393,7 @@ class _BigActionCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: NenaviTheme.accent.withOpacity(0.08),
+            color: NenaviTheme.accent.withValues(alpha: 0.08),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -446,7 +407,7 @@ class _BigActionCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: NenaviTheme.primary.withOpacity(0.12),
+                  color: NenaviTheme.primary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icon, color: NenaviTheme.primary, size: 30),
@@ -456,13 +417,15 @@ class _BigActionCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      title,
+                    SpeakableText(
+                      text: title,
+                      language: lang,
                       style: NenaviTheme.subheading(color: NenaviTheme.accent),
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      subtitle,
+                    SpeakableText(
+                      text: subtitle,
+                      language: lang,
                       style: NenaviTheme.body(
                         color: NenaviTheme.secondary,
                       ).copyWith(fontSize: 15),
@@ -475,7 +438,11 @@ class _BigActionCard extends StatelessWidget {
           const SizedBox(height: 18),
           loading
               ? const Center(child: CircularProgressIndicator())
-              : ElevatedButton(onPressed: onTap, child: Text(buttonLabel)),
+              : SpeakableOptionButton(
+                  onPressed: onTap,
+                  text: buttonLabel,
+                  language: lang,
+                ),
         ],
       ),
     );

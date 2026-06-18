@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:nenavi/data/question_bank.dart';
 import 'package:nenavi/widgets/speakable_text.dart';
+import 'package:nenavi/widgets/assessment_timer.dart';
 
 class AttentionTaskScreen extends StatefulWidget {
   final String language;
+  final DateTime endTime;
   final Function(int score, String seedPhrase, String enteredNumber) onComplete;
 
   const AttentionTaskScreen({
     super.key,
     required this.language,
+    required this.endTime,
     required this.onComplete,
   });
 
@@ -56,7 +59,21 @@ class _AttentionTaskScreenState extends State<AttentionTaskScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Attention Check')),
+      appBar: AppBar(
+        title: const Text('Attention Check'),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(40),
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: AssessmentTimer(
+              endTime: widget.endTime,
+              onExpire: () {
+                if (mounted) Navigator.pop(context, [_totalScore, _seedPhrase, _enteredNumber]);
+              },
+            ),
+          ),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: _step == 0

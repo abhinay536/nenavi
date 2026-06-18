@@ -23,7 +23,9 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
 
   Future<List<Map<String, String>>> _fetchPatients() async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return [];
+    if (user == null) {
+      return [];
+    }
     try {
       await PatientLinkService.processPendingLinksForCaregiver(user.uid);
 
@@ -54,12 +56,14 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
       body: FutureBuilder<List<Map<String, String>>>(
         future: _patientsFuture,
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting)
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
+          }
           final patients = snapshot.data ?? [];
-          if (patients.isEmpty)
+          if (patients.isEmpty) {
             return Center(child: Text('No patients found.',
                 style: NenaviTheme.body(color: NenaviTheme.accent)));
+          }
           return ListView.builder(
             padding: const EdgeInsets.all(20),
             itemCount: patients.length,
@@ -71,7 +75,7 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
                   contentPadding: const EdgeInsets.symmetric(
                       horizontal: 18, vertical: 10),
                   leading: CircleAvatar(
-                    backgroundColor: NenaviTheme.primary.withOpacity(0.15),
+                    backgroundColor: NenaviTheme.primary.withValues(alpha: 0.15),
                     child: const Icon(Icons.person, color: NenaviTheme.primary),
                   ),
                   title: Text(p['email'] ?? 'Unknown',

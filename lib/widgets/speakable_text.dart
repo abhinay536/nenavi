@@ -8,11 +8,12 @@ class TtsService {
   static String? _configuredLocale;
 
   static bool supportsLanguage(String language) {
-    return language == 'en' || language == 'kn';
+    return language == 'en' || language == 'kn' || language == 'tcy';
   }
 
   static String _localeFor(String language) {
-    return language == 'kn' ? 'kn-IN' : 'en-US';
+    if (language == 'kn' || language == 'tcy') return 'kn-IN';
+    return 'en-US';
   }
 
   static Future<void> speak(String text, String language) async {

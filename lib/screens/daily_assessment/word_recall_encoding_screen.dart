@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:nenavi/data/question_bank.dart';
 import 'package:nenavi/widgets/speakable_text.dart';
+import 'package:nenavi/widgets/assessment_timer.dart';
 
 class WordRecallEncodingScreen extends StatefulWidget {
   final String language;
+  final DateTime endTime;
   final Function(List<String> words) onComplete;
 
   const WordRecallEncodingScreen({
     super.key,
     required this.language,
+    required this.endTime,
     required this.onComplete,
   });
 
@@ -34,7 +37,21 @@ class _WordRecallEncodingScreenState extends State<WordRecallEncodingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Remember These Words')),
+      appBar: AppBar(
+        title: const Text('Word Memory'),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(40),
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: AssessmentTimer(
+              endTime: widget.endTime,
+              onExpire: () {
+                if (mounted) widget.onComplete(_wordsToRemember);
+              },
+            ),
+          ),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

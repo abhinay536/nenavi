@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../services/database_helper.dart';
+import '../services/score_service.dart';
 import '../main.dart';
 
 class PatientHistoryScreen extends StatefulWidget {
   final String? patientUid;
-  const PatientHistoryScreen({super.key, this.patientUid});
+  final String? patientEmail;
+  const PatientHistoryScreen({super.key, this.patientUid, this.patientEmail});
   @override
   State<PatientHistoryScreen> createState() => _PatientHistoryScreenState();
 }
@@ -28,39 +29,33 @@ class _PatientHistoryScreenState extends State<PatientHistoryScreen> {
         : currentUser?.uid;
     if (uid == null || uid.isEmpty) return [];
 
-    try {
-      final snapshot = await FirebaseFirestore.instance
-          .collection('scores')
-          .where('patientUid', isEqualTo: uid)
-          .orderBy('date', descending: true)
-          .get()
-          .timeout(const Duration(seconds: 20));
+    final viewingOwnScores =
+        widget.patientUid == null || widget.patientUid == currentUser?.uid;
 
-      if (snapshot.docs.isNotEmpty) {
-        return snapshot.docs.map((d) {
-          final data = d.data();
-          return {
-            'date': data['date'] ?? '',
-            'time': data['time'] ?? '',                          // kept from old
-            'compositeScore':
-                (data['compositeScore'] ?? data['composite_score'] ?? 0) as int,
-            'difficulty': data['difficulty'] ?? 'Basic',
-            'timestamp': data['timestamp'] ?? 0,                // kept from old
-          };
-        }).toList();
-      }
+    try {
+      final scores = await ScoreService.fetchScoresForPatient(uid);
+      if (scores.isNotEmpty) return scores;
     } catch (e) {
-      debugPrint('Firestore fetch error: $e. Falling back to local DB.');
+      debugPrint('Firestore fetch error: $e');
+      if (!viewingOwnScores) rethrow;
     }
 
+    if (!viewingOwnScores) return [];
+
     final local = await DatabaseHelper().getAllScores(patientUid: uid);
-    return local.map((r) => {
-      'date': r['date'] ?? '',
-      'time': r['time'] ?? '',                                   // kept from old
-      'compositeScore': r['composite_score'] ?? 0,
-      'difficulty': r['difficulty'] ?? 'Basic',
-      'timestamp': r['timestamp'] ?? 0,                         // kept from old
-    }).toList().reversed.toList();
+    return local
+        .map(
+          (r) => {
+            'date': r['date'] ?? '',
+            'time': r['time'] ?? '',
+            'compositeScore': r['composite_score'] ?? 0,
+            'difficulty': r['difficulty'] ?? 'Basic',
+            'timestamp': r['timestamp'] ?? 0,
+          },
+        )
+        .toList()
+        .reversed
+        .toList();
   }
 
   LineChartData _buildChart(List<Map<String, dynamic>> scores) {
@@ -80,11 +75,11 @@ class _PatientHistoryScreenState extends State<PatientHistoryScreen> {
         drawVerticalLine: false,
         horizontalInterval: 20,
         getDrawingHorizontalLine: (_) =>
-            FlLine(color: NenaviTheme.secondary.withOpacity(0.2), strokeWidth: 1),
+            FlLine(color: NenaviTheme.secondary.withValues(alpha: 0.2), strokeWidth: 1),
       ),
       borderData: FlBorderData(
         show: true,
-        border: Border.all(color: NenaviTheme.secondary.withOpacity(0.3)),
+        border: Border.all(color: NenaviTheme.secondary.withValues(alpha: 0.3)),
       ),
       titlesData: FlTitlesData(
         leftTitles: AxisTitles(
@@ -110,7 +105,7 @@ class _PatientHistoryScreenState extends State<PatientHistoryScreen> {
           barWidth: 3,
           dotData: FlDotData(
             show: true,
-            getDotPainter: (_, __, ___, ____) => FlDotCirclePainter(
+            getDotPainter: (_, _, _, _) => FlDotCirclePainter(
               radius: 5,
               color: NenaviTheme.primary,
               strokeWidth: 2,
@@ -119,7 +114,7 @@ class _PatientHistoryScreenState extends State<PatientHistoryScreen> {
           ),
           belowBarData: BarAreaData(
             show: true,
-            color: NenaviTheme.primary.withOpacity(0.08),
+            color: NenaviTheme.primary.withValues(alpha: 0.08),
           ),
         ),
       ],
@@ -130,7 +125,13 @@ class _PatientHistoryScreenState extends State<PatientHistoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: NenaviTheme.background,
-      appBar: AppBar(title: const Text('Score History')),
+      appBar: AppBar(
+        title: Text(
+          widget.patientEmail?.isNotEmpty == true
+              ? widget.patientEmail!
+              : 'Score History',
+        ),
+      ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _scoresFuture,
         builder: (context, snap) {
@@ -192,7 +193,6 @@ class _PatientHistoryScreenState extends State<PatientHistoryScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 18, vertical: 16),
                       child: Row(children: [
-                        // Score badge
                         Container(
                           width: 58, height: 58,
                           decoration: BoxDecoration(

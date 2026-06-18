@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:nenavi/data/question_bank.dart';
 import 'package:nenavi/widgets/speakable_text.dart';
+import 'package:nenavi/widgets/assessment_timer.dart';
 
 class DelayedWordRecallScreen extends StatefulWidget {
   final String language;
   final List<String> originalWords;
+  final DateTime endTime;
   final Function(int score) onComplete;
 
   const DelayedWordRecallScreen({
     super.key,
     required this.language,
     required this.originalWords,
+    required this.endTime,
     required this.onComplete,
   });
 
@@ -46,7 +49,24 @@ class _DelayedWordRecallScreenState extends State<DelayedWordRecallScreen> {
     final instruction = _instructions[widget.language] ?? _instructions['en']!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Recall Words')),
+      appBar: AppBar(
+        title: const Text('Delayed Recall'),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(40),
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: AssessmentTimer(
+              endTime: widget.endTime,
+              onExpire: () {
+                final correct = _selectedWords
+                    .where((w) => widget.originalWords.contains(w))
+                    .length;
+                widget.onComplete(correct);
+              },
+            ),
+          ),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

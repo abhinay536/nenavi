@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:nenavi/data/question_bank.dart';
 import 'package:nenavi/widgets/speakable_text.dart';
+import 'package:nenavi/widgets/assessment_timer.dart';
 
 class CalculationScreen extends StatefulWidget {
   final String language;
+  final DateTime endTime;
   final Function(int score) onComplete;
 
   const CalculationScreen({
     super.key,
     required this.language,
+    required this.endTime,
     required this.onComplete,
   });
 
@@ -62,7 +65,21 @@ class _CalculationScreenState extends State<CalculationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Calculation')),
+      appBar: AppBar(
+        title: const Text('Calculation Check'),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(40),
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: AssessmentTimer(
+              endTime: widget.endTime,
+              onExpire: () {
+                if (mounted) widget.onComplete(_score);
+              },
+            ),
+          ),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
